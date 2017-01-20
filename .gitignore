@@ -1,0 +1,7 @@
+*.so
+*.o
+sclp
+sclp14
+sclp16
+*.spim
+
