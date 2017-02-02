@@ -12,10 +12,16 @@
     //ADD CODE HERE
     int int_value;
     float float_value;
-    std::string * string value;
+    std::string * string_value;
+    Ast * ast;
+    Sequence_Ast * sequence_Ast;
 };
 
-//ADD TOKENS HERE
+//ADD TOKENS HEREs
+%token <int_value> INTEGER_NUMBER
+%token <float_value> DOUBLE_NUMBER
+%token <string_value> NAME
+%token VOID INTEGER FLOAT ASSIGN
 
 %left '+' '-'
 %left '*' '/'
@@ -27,6 +33,14 @@
 %type <symbol_entry> variable_declaration
 %type <decl> declaration
 //ADD CODE HERE
+%type <ast> assignment_statement
+%type <ast> variable
+%type <ast> constant
+%type <ast> expression_term
+%type <ast> operand
+%type <ast> arith_expression
+%type <sequence_Ast> statement_list
+
 
 %start program
 
@@ -261,7 +275,7 @@ declaration:
         CHECK_INVARIANT(($2 != NULL), "Name cannot be null");
 
         string name = *$2;
-        Data_Type type = float_data_type;
+        Data_Type type = double_data_type;
 
         pair<Data_Type, string> * declar = new pair<Data_Type, string>(type, name);
 
@@ -276,6 +290,8 @@ statement_list:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        Sequence_Ast * stmt_list = new Sequence_Ast(get_line_number());
+        $$ = stmt_list;
     }
     }
 |
@@ -285,6 +301,8 @@ statement_list:
     {
 
         //ADD CODE HERE
+        $1->ast_push_back($2);
+        $$ = $1;
     }
     }
 ;
@@ -296,6 +314,8 @@ assignment_statement:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        $$ = new Assignment_Ast($1, $3, get_line_number());
+        $$->check_ast();
     }
     }
 ;
@@ -305,11 +325,46 @@ arith_expression:
     // SUPPORT binary +, -, *, / operations, unary -, and allow parenthesization
     // i.e. E -> (E)
     // Connect the rules with the remaining rules given below
-
-    arith_expression + expression_term{
+    operand '+' expression_term
+    {
+        $$ = new Plus_Ast($1, $3, get_line_number());
+        $$->check_ast();
     }
-
-    arith_expression - expression_term{
+|
+    operand '-' expression_term
+    {
+        $$ = new Minus_Ast($1, $3, get_line_number());
+        $$->check_ast();
+    }
+|
+    operand '*' expression_term
+    {
+        $$ = new Mult_Ast($1, $3, get_line_number());
+        $$->check_ast();
+    }
+|
+    operand '/' expression_term
+    {
+        $$ = new Divide_Ast($1, $3, get_line_number());
+        $$->check_ast();
+    }
+|
+    '-' operand %prec UMINUS
+    {
+        $$ = new UMinus_Ast(NULL, $2, get_line_number());
+        $$->check_ast();
+    }
+|
+    '(' operand ')'
+    {
+        $$ = (Arithmetic_Expr_Ast *) $2;
+        $$->check_ast();
+    }
+|
+    expression_term
+    {
+        $$ = (Arithmetic_Expr_Ast *) $1;
+        $$->check_ast();
     }
 ;
 
@@ -319,6 +374,9 @@ operand:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        CHECK_INVARIANT($1!=NULL, "q1");
+        $1->check_ast();
+        $$ = $1;
     }
     }
 ;
@@ -329,6 +387,9 @@ expression_term:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        CHECK_INVARIANT($1!=NULL, "q2");
+        $1->check_ast();
+        $$=$1;
     }
     }
 |
@@ -337,6 +398,9 @@ expression_term:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        CHECK_INVARIANT($1!=NULL, "q3");
+        $1->check_ast();
+        $$=$1;
     }
     }
 ;
@@ -360,6 +424,7 @@ variable:
             CHECK_INPUT_AND_ABORT(CONTROL_SHOULD_NOT_REACH, "Variable has not been declared", get_line_number());
 
         $$ = new Name_Ast(*$1, *var_table_entry, get_line_number());
+        $$ = (Ast*) $$;
 
         delete $1;
     }
@@ -372,6 +437,7 @@ constant:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        $$ = new Number_Ast<int>($1, int_data_type, get_line_number());
     }
     }
 |
@@ -380,6 +446,7 @@ constant:
     if (NOT_ONLY_PARSE)
     {
         //ADD CODE HERE
+        $$ = new Number_Ast<double>($1, double_data_type, get_line_number());
     }
     }
 ;

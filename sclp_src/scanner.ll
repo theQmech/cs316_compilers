@@ -10,27 +10,25 @@ meta [(){};]
 
 // use store_token_name(<TOKEN>) to correctly generate tokens file
 
-void    { return Parser::VOID; }
-int     { return Parser::INTEGER; }
-float   { return Parser::FLOAT; }
+void    { store_token_name("VOID"); return Parser::VOID; }
+int     { store_token_name("INTEGER"); return Parser::INTEGER; }
+float   { store_token_name("FLOAT"); return Parser::FLOAT; }
 
-"="     { return Parser::ASSIGNOP; }
-[-+*/]  { return Parser::ARITHOP; }
+"="     { store_token_name("ASSIGN_OP"); return Parser::ASSIGN; }
+[-+*/]  { store_token_name("ARITH_OP"); return matched()[0]; }
 
-{meta}  {
-    return matched()[0];
-}
+{meta}  { store_token_name("META_CHAR"); return matched()[0]; }
 
 [-]?{digit}+  {
     ParserBase::STYPE__ *val = getSval();
     val->int_value = atoi(matched().c_str());
-    return Parser::INTNUM; 
+    return Parser::INTEGER_NUMBER; 
 }
 
 [-+]?({digit}*\.{digit}+)(e[-+]?{digit}+)?    {
     ParserBase::STYPE__ *val = getSval();
     val->float_value = atoi(matched().c_str());
-    return Parser::FNUM; 
+    return Parser::DOUBLE_NUMBER; 
 }
 
 ({alpha}|\_)({alpha}|{digit}|\_)*    { 
