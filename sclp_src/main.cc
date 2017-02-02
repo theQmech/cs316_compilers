@@ -7,26 +7,26 @@
 
 using namespace std;
 
-#include "common-classes.hh"
-#include "local-environment.hh"
-#include "error-display.hh"
-#include "user-options.hh"
-#include "symbol-table.hh"
-#include "ast.hh"
-#include "sequence-ast.hh"
-#include "procedure.hh"
-#include "program.hh"
-#include "parser.h"
+#include"common-classes.hh"
+#include"local-environment.hh"
+#include"error-display.hh"
+#include"user-options.hh"
+#include"symbol-table.hh"
+#include"ast.hh"
+#include"sequence-ast.hh"
+#include"procedure.hh"
+#include"program.hh"
+#include"parser.h"
 
-#include "dirent.h"
+#include"dirent.h"
 
 int main(int argc, char * argv[]) 
 {
 	string input_file_name = command_options.process_user_command_options(argc, argv);
 
-	Parser sclp_parser(input_file_name);
+	Parser cfglp_parser(input_file_name);
 
-	CHECK_INPUT((!sclp_parser.parse()), "Cannot parse the input program", NO_FILE_LINE);
+	CHECK_INPUT((!cfglp_parser.parse()), "Cannot parse the input program", NO_FILE_LINE);
 
 	if (command_options.not_only_parse)
 	{
@@ -43,8 +43,8 @@ int main(int argc, char * argv[])
 		#endif
 		}
 
-		if ((error_status() == false) && (command_options.is_do_eval_selected()))
-			program_object.evaluate();
+		// if ((error_status() == false) && (command_options.is_do_eval_selected()))
+		// 	program_object.evaluate();
 
 		if ((error_status() == false) && (command_options.is_do_eval_selected() == false))
 		{

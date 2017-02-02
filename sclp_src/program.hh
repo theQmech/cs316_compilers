@@ -1,7 +1,7 @@
 #ifndef PROGRAM_HH
 #define PROGRAM_HH
 
-#include <string>
+#include<string>
 
 #define GLOB_SPACE "   "
 
@@ -29,6 +29,7 @@ public:
 	void print_sym();
 	void print();
 
+	void evaluate_print();
 	Eval_Result & evaluate();
 
 	bool variable_proc_name_check(string symbol);

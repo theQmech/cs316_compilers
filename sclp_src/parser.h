@@ -1,3 +1,5 @@
+
+
 #ifndef Parser_h_included
 #define Parser_h_included
 
@@ -12,7 +14,6 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <string.h>
 
 using namespace std;
 
@@ -31,21 +32,21 @@ using namespace std;
 #undef Parser
 class Parser: public ParserBase
 {
-	Scanner d_scanner;
+  Scanner d_scanner;
 
   public:
     Parser(string input_file_name)
     {
-    	d_scanner.switchStreams(input_file_name, "");
-    	d_scanner.setSval(&d_val__);
+      d_scanner.switchStreams(input_file_name, "");
+      d_scanner.setSval(&d_val__);
 
-    	NOT_ONLY_PARSE = command_options.not_only_parse;
+      NOT_ONLY_PARSE = command_options.not_only_parse;
     }
 
     int parse();
     void print();
 
-    int get_line_number();					// Used for errors
+    int get_line_number();          // Used for errors
 
     bool NOT_ONLY_PARSE;
 
@@ -60,8 +61,8 @@ class Parser: public ParserBase
     void print__();
     void exceptionHandler__(std::exception const &exc)
     {
-    	std::cout << exc.what() << '\n';
-    	++d_nErrors__;
+      std::cout << exc.what() << '\n';
+      ++d_nErrors__;
     }
 };
 

@@ -1,3 +1,5 @@
+
+
 #ifndef PARSER_IH
 #define PARSER_IH
 
@@ -14,7 +16,7 @@
 #include "program.hh"
 #include "parser.h"
 
-////////////////////// sclp Parser functions ///////////////////////
+////////////////////// cfglp Parser functions ///////////////////////
 
 Procedure * current_procedure;
 
@@ -32,7 +34,7 @@ inline int Parser::lex()
 
 inline void Parser::print()         
 {
-////////////////// sclp print tokens ///////////////////////////////
+////////////////// cfglp print tokens ///////////////////////////////
 
 	if (command_options.is_show_tokens_selected())
 		d_scanner.display_token(d_token__);

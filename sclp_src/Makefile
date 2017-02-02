@@ -1,4 +1,4 @@
-OBJ_GEN = scanner.o parser.o
+OBJ_GEN = scanner.o parser.o ast.o
 OBJ_CORE = main.o
 OBJ = $(OBJ_GEN) $(OBJ_CORE) 
 
@@ -11,14 +11,15 @@ HEADERS = $(HEADERS_CORE) $(HEADERS_GEN)
 CPP = g++
 BISONCPP = bisonc++
 FLEXCPP = flexc++
-TGT = sclp 
-LIB = reference # For Ubuntu 16.04. Choose reference14 if you are compiling on Ubuntu 14.04
+TGT = sclp # c interpreter and compiler
 
 option = -DCOMPILE
 CFLAGS = -g
 
+#change -lreference to -lreference14 for ubuntu14.04 in the target below
+
 $(TGT): $(OBJ) 
-	$(CPP) --std=c++0x -L. -Wl,-rpath=. $(option) $(OBJ) -o $(TGT) -l$(LIB)
+	$(CPP) --std=c++0x -L. -Wl,-rpath=. $(option) $(OBJ) -o $(TGT) -lreference14
 
 %.o: %.cc $(HEADERS)
 	$(CPP) --std=c++0x $(option) $(CFLAGS) -c $<
@@ -33,6 +34,7 @@ parser.cc: parser.yy parser.ih parser.h
 
 
 clean :
+	rm -rf test_files test_files_output
 	rm -f *.o scannerbase.h parserbase.h scanner.cc parser.cc parser.yy.output
-	rm -f $(TGT)
+	rm -f sclp
 	rm -f cscope.out tags a.out

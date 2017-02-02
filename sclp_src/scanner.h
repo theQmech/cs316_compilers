@@ -1,24 +1,29 @@
+
+
 #ifndef Scanner_H_INCLUDED_
 #define Scanner_H_INCLUDED_
 
-/////////////////// Header files of sclp ///////////////////////////////
+/////////////////// Header files of cfglp ///////////////////////////////
 
-#include <cstdlib>
-#include <iostream>
-#include <string>
-#include <fstream>
+#include<cstdlib>
+#include<iostream>
+#include<string>
+#include<fstream>
+#include<string.h>
 
 using namespace std;
 
-#include "common-classes.hh"
-#include "local-environment.hh"
-#include "user-options.hh"
-#include "error-display.hh"
-#include "symbol-table.hh"
-#include "ast.hh"
-#include "sequence-ast.hh"
-#include "procedure.hh"
-#include "program.hh"
+#include"common-classes.hh"
+#include"local-environment.hh"
+#include"user-options.hh"
+#include"error-display.hh"
+#include"icode.hh"
+#include"reg-alloc.hh"
+#include"symbol-table.hh"
+#include"ast.hh"
+#include"sequence-ast.hh"
+#include"procedure.hh"
+#include"program.hh"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -27,10 +32,6 @@ using namespace std;
 
 class Scanner: public ScannerBase
 {
-	void postCode(PostEnum__ type);    
-                            // re-implement this function for code that must 
-                            // be exec'ed after the rules's actions.
-
     public:
         explicit Scanner(std::istream &in = std::cin,
                                 std::ostream &out = std::cout);
@@ -42,7 +43,7 @@ class Scanner: public ScannerBase
     private:
         int lex__();
         int executeAction__(size_t ruleNr);
-
+        void postCode(PostEnum__ type);
         void print();
         void preCode(); 
 
@@ -84,7 +85,7 @@ inline int Scanner::lex()
 
 inline void Scanner::preCode() 
 {
-////////////////////////// Command options for sclp ////////////////////////
+////////////////////////// Command options for cfglp ////////////////////////
 #ifndef TOKENS
 #define TOKENS
 
@@ -93,6 +94,11 @@ inline void Scanner::preCode()
 
 #endif
 ////////////////////////////////////////////////////////////////////////////
+}
+
+inline void Scanner::postCode(PostEnum__ type)
+{
+	
 }
 
 inline void Scanner::print() 
@@ -151,12 +157,6 @@ inline ParserBase::STYPE__ * Scanner::getSval()
 {
 	return dval;
 }
-
-inline void Scanner::postCode(PostEnum__ type) 
-{
-    // optionally replace by your own code
-}
-
 
 ///////////////////////////////////////////////////////////////////////////
 

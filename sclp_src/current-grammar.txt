@@ -15,11 +15,12 @@ procedure_declaration:
 ;
 
 procedure_definition:
-	NAME '(' ')' '{' optional_variable_declaration_list statement_list '}'
+	NAME '(' ')'
+	'{' optional_variable_declaration_list statement_list '}'
 ;
 
 optional_variable_declaration_list:
-	/* empty *
+	/* empty */
 |
 	variable_declaration_list
 ;
@@ -36,7 +37,10 @@ variable_declaration:
 
 declaration:
 	INTEGER NAME
+|
+	FLOAT NAME
 ;
+
 
 statement_list:
 |
@@ -44,9 +48,33 @@ statement_list:
 ;
 
 assignment_statement:
-	variable ASSIGN variable ';'
+	variable ASSIGN arith_expression ';'
+;
+
+arith_expression:
+	operand '+' operand
 |
-	variable ASSIGN constant ';'
+	operand '-' operand
+|
+	operand '*' operand
+|
+	operand '/' operand
+|
+	'-' operand %prec UMINUS
+|
+	'(' operand ')'
+|
+	expression_term
+;
+
+operand:
+	arith_expression
+;
+
+expression_term:
+	variable
+|
+	constant
 ;
 
 variable:
@@ -55,4 +83,6 @@ variable:
 
 constant:
 	INTEGER_NUMBER
+|
+	DOUBLE_NUMBER
 ;

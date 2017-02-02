@@ -1,9 +1,31 @@
 
+/*********************************************************************************************
+
+                                cfglp : A CFG Language Processor
+                                --------------------------------
+
+           About:
+
+           Implemented   by  Tanu  Kanvar (tanu@cse.iitb.ac.in) and Uday
+           Khedker    (http://www.cse.iitb.ac.in/~uday)  for the courses
+           cs302+cs306: Language  Processors  (theory and  lab)  at  IIT
+           Bombay.
+
+           Release  date  Jan  15, 2013.  Copyrights  reserved  by  Uday
+           Khedker. This  implemenation  has been made  available purely
+           for academic purposes without any warranty of any kind.
+
+           Documentation (functionality, manual, and design) and related
+           tools are  available at http://www.cse.iitb.ac.in/~uday/cfglp
+
+
+***********************************************************************************************/
+
 #ifndef SYMBOL_TABLE_HH
 #define SYMBOL_TABLE_HH
 
-#include <string>
-#include <list>
+#include<string>
+#include<list>
 
 using namespace std;
 
@@ -13,7 +35,8 @@ class Symbol_Table_Entry;
 typedef enum
 {
 	void_data_type,
-	int_data_type
+	int_data_type,
+	double_data_type,
 } Data_Type;
 
 typedef enum
@@ -21,6 +44,16 @@ typedef enum
 	global,
 	local
 } Table_Scope;
+
+typedef enum
+{
+	less_equalto,
+	less_than,
+	greater_than,
+	greater_equalto,
+	equalto,
+	not_equalto
+} Relational_Op;
 
 class Symbol_Table
 {
@@ -90,10 +123,10 @@ public:
 	Table_Scope get_symbol_scope();
 
 	Data_Type get_data_type();
+	void set_data_type(Data_Type dt);
 	string get_variable_name();
 
 	//compile
-	void set_init_val();
 	void set_start_offset(int num);
 	int get_start_offset();
 	void set_end_offset(int num);
