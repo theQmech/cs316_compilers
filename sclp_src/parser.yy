@@ -14,6 +14,8 @@
     float float_value;
     std::string * string_value;
     Ast * ast;
+    Assignment_Ast * assign_ast;
+    Arithmetic_Expr_Ast * arith_ast;
     Sequence_Ast * sequence_Ast;
 };
 
@@ -33,12 +35,12 @@
 %type <symbol_entry> variable_declaration
 %type <decl> declaration
 //ADD CODE HERE
-%type <ast> assignment_statement
 %type <ast> variable
 %type <ast> constant
+%type <arith_ast> operand
 %type <ast> expression_term
-%type <ast> operand
-%type <ast> arith_expression
+%type <assign_ast> assignment_statement
+%type <arith_ast> arith_expression
 %type <sequence_Ast> statement_list
 
 
@@ -325,25 +327,25 @@ arith_expression:
     // SUPPORT binary +, -, *, / operations, unary -, and allow parenthesization
     // i.e. E -> (E)
     // Connect the rules with the remaining rules given below
-    operand '+' expression_term
+    operand '+' operand
     {
         $$ = new Plus_Ast($1, $3, get_line_number());
         $$->check_ast();
     }
 |
-    operand '-' expression_term
+    operand '-' operand
     {
         $$ = new Minus_Ast($1, $3, get_line_number());
         $$->check_ast();
     }
 |
-    operand '*' expression_term
+    operand '*' operand
     {
         $$ = new Mult_Ast($1, $3, get_line_number());
         $$->check_ast();
     }
 |
-    operand '/' expression_term
+    operand '/' operand
     {
         $$ = new Divide_Ast($1, $3, get_line_number());
         $$->check_ast();
@@ -364,7 +366,7 @@ arith_expression:
     expression_term
     {
         $$ = (Arithmetic_Expr_Ast *) $1;
-        $$->check_ast();
+        // $$->check_ast();
     }
 ;
 
@@ -375,7 +377,6 @@ operand:
     {
         //ADD CODE HERE
         CHECK_INVARIANT($1!=NULL, "q1");
-        $1->check_ast();
         $$ = $1;
     }
     }
@@ -388,7 +389,6 @@ expression_term:
     {
         //ADD CODE HERE
         CHECK_INVARIANT($1!=NULL, "q2");
-        $1->check_ast();
         $$=$1;
     }
     }
@@ -399,7 +399,6 @@ expression_term:
     {
         //ADD CODE HERE
         CHECK_INVARIANT($1!=NULL, "q3");
-        $1->check_ast();
         $$=$1;
     }
     }
@@ -424,8 +423,6 @@ variable:
             CHECK_INPUT_AND_ABORT(CONTROL_SHOULD_NOT_REACH, "Variable has not been declared", get_line_number());
 
         $$ = new Name_Ast(*$1, *var_table_entry, get_line_number());
-        $$ = (Ast*) $$;
-
         delete $1;
     }
     }

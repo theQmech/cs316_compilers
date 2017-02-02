@@ -81,7 +81,7 @@ bool Assignment_Ast::check_ast()
 	Data_Type l = lhs->get_data_type();
 	Data_Type r = rhs->get_data_type();
 
-	CHECK_INVARIANT((l==void_data_type || r==void_data_type), "Assignment not compatible with void_data_type");
+	CHECK_INVARIANT((l!=void_data_type && r!=void_data_type), "Assignment not compatible with void_data_type");
 
 	node_data_type = l;
 	return true;
@@ -108,12 +108,12 @@ void Assignment_Ast::print(ostream & file_buffer)
 
 Name_Ast::Name_Ast(string & name, Symbol_Table_Entry & var_entry, int line)
 {
+	variable_symbol_entry = &var_entry;
 
 	CHECK_INVARIANT((variable_symbol_entry->get_variable_name() == name),
 		"Variable's symbol entry is not matching its name");
 	//ADD CODE HERE
 
-	variable_symbol_entry = &var_entry;
 }
 
 Name_Ast::~Name_Ast()
@@ -214,17 +214,17 @@ bool Arithmetic_Expr_Ast::check_ast()
 	Data_Type l = lhs->get_data_type();
 	Data_Type r = rhs->get_data_type();
 
-	CHECK_INVARIANT((l==void_data_type || r==void_data_type), "void_data_type in Arithmetic_Expr_Ast");
+	CHECK_INVARIANT((l!=void_data_type & r!=void_data_type), "void_data_type in Arithmetic_Expr_Ast");
 
 	if (l==double_data_type || r==double_data_type)
 		node_data_type = double_data_type;
 	else
 		node_data_type = int_data_type;
+
 	return true;
 
 	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, 
 		"Assignment statement data type not compatible", lineno);
-
 
 	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Arithmetic statement data type not compatible", lineno);
 }
@@ -304,7 +304,6 @@ void UMinus_Ast::print(ostream & file_buffer)
 	//ADD CODE HERE
 	// file_buffer<<"UMinus_Ast: \n"<<lhs->print_ast()<<rhs->print_ast();
 }
-
 
 template class Number_Ast<double>;
 template class Number_Ast<int>;
