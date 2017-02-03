@@ -121,7 +121,6 @@ public:
 	bool check_ast();
 
 	virtual void print(ostream & file_buffer) = 0;
-	
 	virtual Code_For_Ast & compile() = 0;
 	virtual Code_For_Ast & compile_and_optimize_ast(Lra_Outcome & lra) = 0;
 };
@@ -181,7 +180,6 @@ public:
 	~UMinus_Ast() {}
 	
 	void print(ostream & file_buffer);
-
 	Code_For_Ast & compile();
 	Code_For_Ast & compile_and_optimize_ast(Lra_Outcome & lra);
 };
