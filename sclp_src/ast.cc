@@ -336,5 +336,26 @@ void UMinus_Ast::print(ostream & file_buffer)
 	file_buffer << ")\n";
 }
 
+bool UMinus_Ast::check_ast()
+{
+	CHECK_INVARIANT((rhs != NULL), "Rhs of Arithmetic_Expr_Ast cannot be null");
+
+	Data_Type r = rhs->get_data_type();
+
+	CHECK_INVARIANT((r!=void_data_type), "void_data_type in Arithmetic_Expr_Ast");
+
+	if (r==double_data_type)
+		node_data_type = double_data_type;
+	else
+		node_data_type = int_data_type;
+
+	return true;
+
+	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, 
+		"Assignment statement data type not compatible", lineno);
+
+	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Arithmetic statement data type not compatible", lineno);
+}
+
 template class Number_Ast<double>;
 template class Number_Ast<int>;
