@@ -62,6 +62,7 @@ Assignment_Ast::Assignment_Ast(Ast * temp_lhs, Ast * temp_rhs, int line)
 	//ADD CODE HERE
 	lhs = temp_lhs;
 	rhs = temp_rhs;
+	lineno = line;
 }
 
 Assignment_Ast::~Assignment_Ast()
@@ -73,15 +74,17 @@ Assignment_Ast::~Assignment_Ast()
 
 bool Assignment_Ast::check_ast()
 {
-	CHECK_INVARIANT((rhs != NULL), "Rhs of Assignment_Ast cannot be null");
-	CHECK_INVARIANT((lhs != NULL), "Lhs of Assignment_Ast cannot be null");
+	if (ast_num_child==binary_arity || ast_num_child==unary_arity)
+		CHECK_INVARIANT((lhs != NULL), "Lhs of Assignment_Ast cannot be null");
+	if (ast_num_child==binary_arity)
+		CHECK_INVARIANT((rhs != NULL), "Rhs of Assignment_Ast cannot be null");
 
 	// use typeid(), get_data_type()
 	//ADD CODE HERE
 	Data_Type l = lhs->get_data_type();
 	Data_Type r = rhs->get_data_type();
 
-	CHECK_INVARIANT((l!=void_data_type && r!=void_data_type), "Assignment not compatible with void_data_type");
+	CHECK_INPUT((l==r), "Assignment statement data type not compatible", lineno);
 
 	node_data_type = l;
 	return true;
@@ -96,11 +99,11 @@ void Assignment_Ast::print(ostream & file_buffer)
 	file_buffer <<"\n" << AST_SPACE << "Asgn:\n";
 
 	file_buffer << AST_NODE_SPACE"LHS (";
-	// lhs->print_ast(file_buffer);
+	lhs->print(file_buffer);
 	file_buffer << ")\n";
 
 	file_buffer << AST_NODE_SPACE << "RHS (";
-	// rhs->print_ast(file_buffer);
+	rhs->print(file_buffer);
 	file_buffer << ")";
 }
 
@@ -113,6 +116,7 @@ Name_Ast::Name_Ast(string & name, Symbol_Table_Entry & var_entry, int line)
 	CHECK_INVARIANT((variable_symbol_entry->get_variable_name() == name),
 		"Variable's symbol entry is not matching its name");
 	//ADD CODE HERE
+	lineno = line;
 
 }
 
@@ -155,6 +159,7 @@ Number_Ast<DATA_TYPE>::Number_Ast(DATA_TYPE number, Data_Type constant_data_type
 	constant = number;
 	node_data_type = constant_data_type;
 	ast_num_child = zero_arity;
+	lineno = line;
 }
 
 template <class DATA_TYPE>
@@ -208,23 +213,24 @@ bool Arithmetic_Expr_Ast::check_ast()
 	// use get_data_type(), typeid()
 	//ADD CODE HERE
 
-	CHECK_INVARIANT((rhs != NULL), "Rhs of Assignment_Ast cannot be null");
-	CHECK_INVARIANT((lhs != NULL), "Lhs of Assignment_Ast cannot be null");
-
-	Data_Type l = lhs->get_data_type();
-	Data_Type r = rhs->get_data_type();
-
-	CHECK_INVARIANT((l!=void_data_type & r!=void_data_type), "void_data_type in Arithmetic_Expr_Ast");
-
-	if (l==double_data_type || r==double_data_type)
-		node_data_type = double_data_type;
-	else
-		node_data_type = int_data_type;
-
-	return true;
-
-	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, 
-		"Assignment statement data type not compatible", lineno);
+	if (ast_num_child==zero_arity){
+		return true;
+	}
+	if (ast_num_child==unary_arity){
+		CHECK_INVARIANT((lhs != NULL), "Lhs of Arithmetic_Expr_Ast cannot be null");
+		node_data_type = lhs->get_data_type();
+		return true;
+	}
+	if (ast_num_child==binary_arity){
+		CHECK_INPUT((lhs->get_data_type()==rhs->get_data_type()), "Arithmetic statement data type not compatible", lineno);
+		CHECK_INVARIANT((lhs != NULL), "Lhs of Arithmetic_Expr_Ast cannot be null");
+		CHECK_INVARIANT((rhs != NULL), "Rhs of Arithmetic_Expr_Ast cannot be null");
+		if (lhs->get_data_type()==double_data_type || rhs->get_data_type()==double_data_type)
+			node_data_type = double_data_type;
+		else
+			node_data_type = int_data_type;
+		return true;
+	}
 
 	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Arithmetic statement data type not compatible", lineno);
 }
@@ -237,12 +243,22 @@ Plus_Ast::Plus_Ast(Ast * l, Ast * r, int line)
 	//ADD CODE HERE
 	lhs = l;
 	rhs = r;
+	ast_num_child = binary_arity;
+	lineno = line;
 }
 
 void Plus_Ast::print(ostream & file_buffer)
 {
 	//ADD CODE HERE
-	// file_buffer<<"Plus_Ast: \n"<<lhs->print_ast()<<rhs->print_ast();
+	file_buffer <<"\n" << AST_NODE_SPACE << "Arith: PLUS\n";
+
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")\n";
+
+	file_buffer << AST_SUB_NODE_SPACE << "RHS (";
+	rhs->print(file_buffer);
+	file_buffer << ")";
 }
 
 /////////////////////////////////////////////////////////////////
@@ -252,12 +268,22 @@ Minus_Ast::Minus_Ast(Ast * l, Ast * r, int line)
 	//ADD CODE HERE
 	lhs = l;
 	rhs = r;
+	ast_num_child = binary_arity;
+	lineno = line;
 }
 
 void Minus_Ast::print(ostream & file_buffer)
 {
 	//ADD CODE HERE
-	// file_buffer<<"Minus_Ast: \n"<<lhs->print_ast()<<rhs->print_ast();
+	file_buffer <<"\n" << AST_NODE_SPACE << "Arith: MINUS\n";
+
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")\n";
+
+	file_buffer << AST_SUB_NODE_SPACE << "RHS (";
+	rhs->print(file_buffer);
+	file_buffer << ")";
 }
 
 //////////////////////////////////////////////////////////////////
@@ -267,12 +293,22 @@ Mult_Ast::Mult_Ast(Ast * l, Ast * r, int line)
 	//ADD CODE HERE
 	lhs = l;
 	rhs = r;
+	ast_num_child = binary_arity;
+	lineno = line;
 }
 
 void Mult_Ast::print(ostream & file_buffer)
 {
 	//ADD CODE HERE
-	// file_buffer<<"Mult_Ast: \n"<<l->print_ast()<<r->print_ast();
+	file_buffer <<"\n" << AST_NODE_SPACE << "Arith: MULT\n";
+
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")\n";
+
+	file_buffer << AST_SUB_NODE_SPACE << "RHS (";
+	rhs->print(file_buffer);
+	file_buffer << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,12 +318,22 @@ Divide_Ast::Divide_Ast(Ast * l, Ast * r, int line)
 	//ADD CODE HERE
 	lhs = l;
 	rhs = r;
+	ast_num_child = binary_arity;
+	lineno = line;
 }
 
 void Divide_Ast::print(ostream & file_buffer)
 {
 	//ADD CODE HERE
-	// file_buffer<<"Divide_Ast: \n"<<l->print_ast()<<r->print_ast();
+	file_buffer <<"\n" << AST_NODE_SPACE << "Arith: DIV\n";
+
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")\n";
+
+	file_buffer << AST_SUB_NODE_SPACE << "RHS (";
+	rhs->print(file_buffer);
+	file_buffer << ")";
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -297,12 +343,18 @@ UMinus_Ast::UMinus_Ast(Ast * l, Ast * r, int line)
 	//ADD CODE HERE
 	lhs = l;
 	rhs = r;
+	ast_num_child = unary_arity;
+	lineno = line;
 }
 
 void UMinus_Ast::print(ostream & file_buffer)
 {
 	//ADD CODE HERE
-	// file_buffer<<"UMinus_Ast: \n"<<lhs->print_ast()<<rhs->print_ast();
+	file_buffer <<"\n" << AST_NODE_SPACE << "Arith: UMINUS\n";
+
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")";
 }
 
 template class Number_Ast<double>;

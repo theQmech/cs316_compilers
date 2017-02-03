@@ -10,28 +10,31 @@ meta [(){};]
 
 // use store_token_name(<TOKEN>) to correctly generate tokens file
 
-void    { store_token_name("VOID"); return Parser::VOID; }
 int     { store_token_name("INTEGER"); return Parser::INTEGER; }
 float   { store_token_name("FLOAT"); return Parser::FLOAT; }
+void    { store_token_name("VOID"); return Parser::VOID; }
 
 "="     { store_token_name("ASSIGN_OP"); return Parser::ASSIGN; }
-[-+*/]  { store_token_name("ARITH_OP"); return matched()[0]; }
+[-+*/]  { store_token_name("ARITHOP"); return matched()[0]; }
 
-{meta}  { store_token_name("META_CHAR"); return matched()[0]; }
+{meta}  { store_token_name("META CHAR"); return matched()[0]; }
 
-[-]?{digit}+  {
+{digit}+  {
+    store_token_name("NUM");
     ParserBase::STYPE__ *val = getSval();
     val->int_value = atoi(matched().c_str());
     return Parser::INTEGER_NUMBER; 
 }
 
-[-+]?({digit}*\.{digit}+)(e[-+]?{digit}+)?    {
+(({digit}*\.{digit}+)|({digit}+\.{digit}*)|({digit}+))([eE][-+]?{digit}+)?    {
+    store_token_name("FNUM");
     ParserBase::STYPE__ *val = getSval();
-    val->float_value = atoi(matched().c_str());
+    val->float_value = atof(matched().c_str());
     return Parser::DOUBLE_NUMBER; 
 }
 
 ({alpha}|\_)({alpha}|{digit}|\_)*    { 
+    store_token_name("NAME");
     ParserBase::STYPE__ *val = getSval();
     val->string_value = new std::string(matched());
     return Parser::NAME; 

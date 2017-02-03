@@ -14,6 +14,7 @@
     float float_value;
     std::string * string_value;
     Ast * ast;
+    Name_Ast * name_ast;
     Assignment_Ast * assign_ast;
     Arithmetic_Expr_Ast * arith_ast;
     Sequence_Ast * sequence_Ast;
@@ -37,10 +38,10 @@
 //ADD CODE HERE
 %type <ast> variable
 %type <ast> constant
-%type <arith_ast> operand
+%type <ast> operand
 %type <ast> expression_term
-%type <assign_ast> assignment_statement
-%type <arith_ast> arith_expression
+%type <ast> assignment_statement
+%type <ast> arith_expression
 %type <sequence_Ast> statement_list
 
 
@@ -329,44 +330,57 @@ arith_expression:
     // Connect the rules with the remaining rules given below
     operand '+' operand
     {
-        $$ = new Plus_Ast($1, $3, get_line_number());
-        $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = new Plus_Ast($1, $3, get_line_number());
+            $$->check_ast();
+        }
     }
 |
     operand '-' operand
     {
-        $$ = new Minus_Ast($1, $3, get_line_number());
-        $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = new Minus_Ast($1, $3, get_line_number());
+            $$->check_ast();
+        }
     }
 |
     operand '*' operand
     {
-        $$ = new Mult_Ast($1, $3, get_line_number());
-        $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = new Mult_Ast($1, $3, get_line_number());
+            $$->check_ast();
+        }
     }
 |
     operand '/' operand
     {
-        $$ = new Divide_Ast($1, $3, get_line_number());
-        $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = new Divide_Ast($1, $3, get_line_number());
+            $$->check_ast();
+        }
     }
 |
     '-' operand %prec UMINUS
     {
-        $$ = new UMinus_Ast(NULL, $2, get_line_number());
-        $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = new UMinus_Ast($2, NULL, get_line_number());
+            $$->check_ast();
+        }
     }
 |
     '(' operand ')'
     {
-        $$ = (Arithmetic_Expr_Ast *) $2;
-        $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = (Arithmetic_Expr_Ast *) $2;
+            $$->check_ast();
+        }
     }
 |
     expression_term
     {
-        $$ = (Arithmetic_Expr_Ast *) $1;
-        // $$->check_ast();
+        if (NOT_ONLY_PARSE){
+            $$ = (Arithmetic_Expr_Ast *) $1;
+        }
     }
 ;
 
