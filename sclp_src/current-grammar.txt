@@ -36,15 +36,38 @@ variable_declaration:
 ;
 
 declaration:
-	INTEGER NAME
+	INTEGER variable_list
 |
-	FLOAT NAME
+	FLOAT variable_list
 ;
 
+variable_list:
+	NAME
+|
+	NAME, variable_list
+;
 
 statement_list:
 |
 	statement_list assignment_statement
+|
+	statement_list block
+;
+
+block:
+	WHILE '(' bool_expression ')' postblock
+|
+	DO postblock WHILE '(' bool_expression ')' ';'
+|
+	IF '(' bool_expression ')' postblock
+|
+	IF '(' bool_expression ')' postblock ELSE postblock
+;
+
+postblock:
+	assignment_statement
+|
+	'{' statement_list '}'
 ;
 
 assignment_statement:
@@ -65,7 +88,29 @@ arith_expression:
 	'(' operand ')'
 |
 	expression_term
+|
+	bool_expression QMARK arith_expression COLON arith_expression
 ;
+
+bool_expression:
+	arith_expression '<' arith_expression
+|
+	arith_expression '<=' arith_expression
+|
+	arith_expression '>' arith_expression
+|
+	arith_expression '>=' arith_expression
+|
+	arith_expression '!=' arith_expression
+|
+	arith_expression '==' arith_expression
+|
+	bool_expression '&&' bool_expression
+|
+	bool_expression '||' bool_expression
+|
+	'!' bool_expression
+|
 
 operand:
 	arith_expression
