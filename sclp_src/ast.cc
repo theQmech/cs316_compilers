@@ -17,6 +17,8 @@ using namespace std;
 Ast::Ast()
 {}
 
+int Ast::labelCounter=0;
+
 Ast::~Ast()
 {}
 
@@ -196,9 +198,17 @@ void Number_Ast<DATA_TYPE>::print(ostream & file_buffer)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+Arithmetic_Expr_Ast::~Arithmetic_Expr_Ast(){
+	if (!lhs)
+		delete lhs;
+	if (!rhs)
+		delete rhs;
+}
+
+
 Data_Type Arithmetic_Expr_Ast::get_data_type()
 {
-	//ADD CODE HERE
+	//ABoD CODE HERE
 	return node_data_type;
 }
 
@@ -234,6 +244,29 @@ bool Arithmetic_Expr_Ast::check_ast()
 
 	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Arithmetic statement data type not compatible", lineno);
 }
+
+/////////////////////////////////////////////////////////////////////
+
+Conditional_Operator_Ast::Conditional_Operator_Ast(Ast* cond, Ast* l, Ast* r, int line):
+cond(cond){
+	lhs = l;
+	rhs = r;
+	lineno = line;
+}
+Conditional_Operator_Ast::~Conditional_Operator_Ast(){
+	if (!cond)
+		delete cond;
+	// if (!lhs)
+	// 	delete lhs;
+	// if (!rhs)
+	// 	delete rhs;
+}
+
+void Conditional_Operator_Ast::print(ostream & file_buffer){
+	file_buffer<<"Conditional_Operator_Ast__FILLER\n";
+}
+
+Code_For_Ast & Conditional_Operator_Ast::compile(){}
 
 /////////////////////////////////////////////////////////////////////
 
@@ -356,6 +389,192 @@ void UMinus_Ast::print(ostream & file_buffer)
 	lhs->print(file_buffer);
 	file_buffer << ")";
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+Relational_Expr_Ast::Relational_Expr_Ast(Ast * lhs, Relational_Op rop, Ast * rhs, int line):
+lhs_condition(lhs),rhs_condition(rhs),rel_op(rop){
+	lineno = line;
+	node_data_type = int_data_type;
+	ast_num_child = binary_arity;
+}
+
+Relational_Expr_Ast::~Relational_Expr_Ast(){
+	if (lhs_condition)
+		delete lhs_condition;
+	if (rhs_condition)
+		delete rhs_condition;
+}
+
+Data_Type Relational_Expr_Ast::get_data_type()
+{
+	//ADD CODE HERE
+	return node_data_type;
+}
+
+void Relational_Expr_Ast::set_data_type(Data_Type dt)
+{
+	//ADD CODE HERE
+	node_data_type = dt;
+}
+
+bool Relational_Expr_Ast::check_ast()
+{
+	// use get_data_type(), typeid()
+	//ADD CODE HERE
+
+	if (ast_num_child==binary_arity){
+		CHECK_INPUT((lhs_condition->get_data_type()==rhs_condition->get_data_type()), "ArithmeticRelational statement data type not compatible", lineno);
+		CHECK_INVARIANT((lhs_condition != NULL), "Lhs of Relational_Expr_Ast cannot be null");
+		CHECK_INVARIANT((rhs_condition != NULL), "Rhs of Relational_Expr_Ast cannot be null");
+		if (lhs_condition->get_data_type()==double_data_type || rhs_condition->get_data_type()==double_data_type)
+			node_data_type = double_data_type;
+		else
+			node_data_type = int_data_type;
+		return true;
+	}
+
+	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Relational statement data type not compatible", lineno);
+}
+
+void Relational_Expr_Ast::print(ostream &file_buffer){
+	file_buffer<<"Relational_Expr_Ast__print_filler\n";
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Boolean_Expr_Ast::Boolean_Expr_Ast(Ast * lhs, Boolean_Op bop, Ast * rhs, int line):
+lhs_op(lhs),rhs_op(rhs),bool_op(bop){
+	lineno = line;
+}
+
+Boolean_Expr_Ast::~Boolean_Expr_Ast(){
+	if (lhs_op)
+		delete lhs_op;
+	if (rhs_op)
+		delete rhs_op;
+}
+
+Data_Type Boolean_Expr_Ast::get_data_type()
+{
+	//ADD CODE HERE
+	return node_data_type;
+}
+
+void Boolean_Expr_Ast::set_data_type(Data_Type dt)
+{
+	//ADD CODE HERE
+	node_data_type = dt;
+}
+
+bool Boolean_Expr_Ast::check_ast()
+{
+	// use get_data_type(), typeid()
+	//ADD CODE HERE
+
+	if (ast_num_child==binary_arity){
+		CHECK_INPUT((lhs_op->get_data_type()==rhs_op->get_data_type()), "Boolean statement data type not compatible", lineno);
+		CHECK_INVARIANT((lhs_op != NULL), "Lhs of Boolean_Expr_Ast cannot be null");
+		CHECK_INVARIANT((rhs_op != NULL), "Rhs of Boolean_Expr_Ast cannot be null");
+		if (lhs_op->get_data_type()==double_data_type || rhs_op->get_data_type()==double_data_type)
+			node_data_type = double_data_type;
+		else
+			node_data_type = int_data_type;
+		return true;
+	}
+
+	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Boolean statement data type not compatible", lineno);
+}
+
+void Boolean_Expr_Ast::print(ostream &file_buffer){
+	file_buffer<<"Boolean_Expr_Ast__print_filler\n";
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Iteration_Statement_Ast::Iteration_Statement_Ast(Ast * cond, Ast* body, int line, bool do_form):
+cond(cond),body(body){
+	is_do_form = do_form;
+	lineno = line;
+}
+
+void Iteration_Statement_Ast::print(ostream & file_buffer){
+	file_buffer<<"Iteration_Statement_Ast__FILLER\n";
+}
+
+Iteration_Statement_Ast::~Iteration_Statement_Ast(){
+	if (!cond)
+		delete cond;
+	if (!body)
+		delete body;
+}
+
+Code_For_Ast & Iteration_Statement_Ast::compile(){
+}
+Data_Type Iteration_Statement_Ast::get_data_type(){
+	return node_data_type;
+}
+void Iteration_Statement_Ast::set_data_type(Data_Type dt){
+	node_data_type = dt;
+}
+bool Iteration_Statement_Ast::check_ast(){
+	return (cond && body);
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Selection_Statement_Ast::Selection_Statement_Ast(Ast * cond,Ast* then_part, Ast* else_part, int line):
+cond(cond),then_part(then_part),else_part(else_part){
+	lineno = line;
+}
+
+Selection_Statement_Ast::~Selection_Statement_Ast(){
+	if (!cond)
+		delete cond;
+	if (!then_part)
+		delete then_part;
+	if (!else_part)
+		delete else_part;
+}
+
+Data_Type Selection_Statement_Ast::get_data_type(){
+	return node_data_type;
+}
+void Selection_Statement_Ast::set_data_type(Data_Type dt){
+	node_data_type = dt;
+}
+
+bool Selection_Statement_Ast::check_ast(){
+	return (cond && then_part);
+}
+
+void Selection_Statement_Ast::print(ostream & file_buffer){
+	file_buffer<<"Selection_Statement_Ast__print_filler\n";
+}
+
+Code_For_Ast & Selection_Statement_Ast::compile(){
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Sequence_Ast::Sequence_Ast(int line)
+{
+	lineno = line;
+}
+
+Sequence_Ast::~Sequence_Ast()
+{
+}
+void Sequence_Ast::ast_push_back(Ast * ast){
+	statement_list.push_back(ast);
+}
+void Sequence_Ast::print(ostream & file_buffer){
+	file_buffer<<"Selection_Statement_Ast__print_filler\n";
+}
+Code_For_Ast & Sequence_Ast::compile(){}
+
+/////////////////////////////////////////////////////////////////////
+
 
 template class Number_Ast<double>;
 template class Number_Ast<int>;

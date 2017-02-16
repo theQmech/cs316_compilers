@@ -111,6 +111,8 @@ bool_expression:
 |
 	'!' bool_expression
 |
+	'(' bool_expression ')'
+;
 
 operand:
 	arith_expression

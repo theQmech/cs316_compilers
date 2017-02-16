@@ -18,6 +18,7 @@
     Name_Ast * name_ast;
     Assignment_Ast * assign_ast;
     Arithmetic_Expr_Ast * arith_ast;
+    Boolean_Expr_Ast * bool_ast;
     Sequence_Ast * sequence_Ast;
     list<string> * list_string;
     pair<Data_Type, list<string>*> * new_decl;
@@ -28,11 +29,18 @@
 %token <float_value> DOUBLE_NUMBER
 %token <string_value> NAME
 %token VOID INTEGER FLOAT ASSIGN WHILE IF DO ELSE
-%token FOR GOTO SWITCH COLON QMARK
-%token LT LTE GT GTE EQ NEQ AND OR NOT
+// %token FOR GOTO SWITCH 
+// %token COLON QMARK
+// %token LT LTE GT GTE EQ NEQ AND OR NOT
 
+%right QMARK COLON
+%left OR
+%left AND
+%left EQ NEQ
+%left LT LTE GT GTE
 %left '+' '-'
 %left '*' '/'
+%right NOT
 %right UMINUS
 %nonassoc '('
 
@@ -47,6 +55,9 @@
 %type <ast> expression_term
 %type <ast> assignment_statement
 %type <ast> arith_expression
+%type <ast> bool_expression
+%type <ast> postblock
+%type <ast> block
 %type <sequence_Ast> statement_list
 %type <list_string> variable_list
 
@@ -353,6 +364,48 @@ statement_list:
         
     }
 ;
+
+block:
+    WHILE '(' bool_expression ')' postblock
+    {
+        $$ = (Ast*) new Iteration_Statement_Ast($3, $5, get_line_number(), false);
+        $$->check_ast();
+    }
+|
+    DO postblock WHILE '(' bool_expression ')' ';'
+    {
+        $$ = (Ast*) new Iteration_Statement_Ast($5, $2, get_line_number(), true);
+        $$->check_ast();
+    }
+|
+    IF '(' bool_expression ')' postblock
+    {
+        $$ = (Ast*) new Selection_Statement_Ast($3, $5, (Ast*)NULL, get_line_number());
+        $$->check_ast();
+    }
+|
+    IF '(' bool_expression ')' postblock ELSE postblock
+    {
+        $$ = (Ast*) new Selection_Statement_Ast($3, $5, $7, get_line_number());
+        $$->check_ast();
+    }
+;
+
+postblock:
+    assignment_statement
+    {
+        Sequence_Ast * seq_ast = new Sequence_Ast(get_line_number());
+        seq_ast->ast_push_back($1);
+        $$ = seq_ast;
+        $$->check_ast();
+    }
+|
+    '{' statement_list '}'
+    {
+        $$ = $2;
+    }
+;
+
 // Make sure to call check_ast in assignment_statement and arith_expression
 // Refer to error_display.hh for displaying semantic errors if any
 assignment_statement:
@@ -415,8 +468,7 @@ arith_expression:
     '(' operand ')'
     {
         if (NOT_ONLY_PARSE){
-            $$ = (Arithmetic_Expr_Ast *) $2;
-            $$->check_ast();
+            $$ = $2;
         }
     }
 |
@@ -425,6 +477,93 @@ arith_expression:
         if (NOT_ONLY_PARSE){
             $$ = (Arithmetic_Expr_Ast *) $1;
         }
+    }
+|
+    bool_expression QMARK arith_expression COLON arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Conditional_Operator_Ast($1, $3, $5, get_line_number());
+            $$->check_ast();
+        }
+    }
+;
+
+bool_expression:
+    arith_expression LT arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Relational_Expr_Ast($1, less_than, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    arith_expression LTE arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Relational_Expr_Ast($1, less_equalto, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    arith_expression GT arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Relational_Expr_Ast($1, greater_than, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    arith_expression GTE arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Relational_Expr_Ast($1, greater_equalto, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    arith_expression NEQ arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Relational_Expr_Ast($1, not_equalto, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    arith_expression EQ arith_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Relational_Expr_Ast($1, equalto, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    bool_expression AND bool_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Boolean_Expr_Ast($1, boolean_and, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    bool_expression OR bool_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Boolean_Expr_Ast($1, boolean_or, $3, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    NOT bool_expression
+    {
+        if (NOT_ONLY_PARSE){
+            $$ = new Boolean_Expr_Ast(NULL, boolean_not, $2, get_line_number());
+            $$->check_ast();
+        }
+    }
+|
+    '(' bool_expression ')'
+    {
+        $$ = $2;
     }
 ;
 
