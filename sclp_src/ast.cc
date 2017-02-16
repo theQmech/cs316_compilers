@@ -196,6 +196,102 @@ void Number_Ast<DATA_TYPE>::print(ostream & file_buffer)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+Relational_Expr_Ast::Relational_Expr_Ast(Ast * lhs, Relational_Op rop, Ast * rhs, int line)
+{
+	lhs_op = lhs;
+	rhs_op = rhs;
+	rel_op = rop;
+	lineno = line;
+	ast_num_child = binary_arity;
+}
+
+Relational_Expr_Ast::~Relational_Expr_Ast()
+{}
+
+Data_Type Relational_Expr_Ast::get_data_type()
+{
+	return node_data_type;
+}
+
+void Relational_Expr_Ast::set_data_type(Data_Type dt)
+{
+	node_data_type = dt;
+}
+
+bool Relational_Expr_Ast::check_ast()
+{
+	CHECK_INPUT((lhs->get_data_type()==rhs->get_data_type()), "Relational Expression statement data type not compatible", lineno);
+	CHECK_INVARIANT((lhs != NULL), "Lhs of Relational_Expr_Ast cannot be null");
+	CHECK_INVARIANT((rhs != NULL), "Rhs of Relational_Expr_Ast cannot be null");
+	return true;	
+}
+
+void Relational_Expr_Ast::print(ostream & file_buffer)
+{
+	if (rel_op == less_equalto)
+	{
+		file_buffer <<"\n" << AST_NODE_SPACE << "Relational: <=\n";
+	}
+	if (rel_op == less_than)
+	{
+		file_buffer <<"\n" << AST_NODE_SPACE << "Relational: < \n";
+	}
+	if (rel_op == greater_than)
+	{
+		file_buffer <<"\n" << AST_NODE_SPACE << "Relational: > \n";
+	}
+	if (rel_op == greater_equalto)
+	{
+		file_buffer <<"\n" << AST_NODE_SPACE << "Relational: >=\n";
+	}
+	if (rel_op == equalto)
+	{
+		file_buffer <<"\n" << AST_NODE_SPACE << "Relational: ==\n";
+	}
+	if (rel_op == not_equalto)
+	{
+		file_buffer <<"\n" << AST_NODE_SPACE << "Relational: !==\n";
+	}
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")\n";
+
+	file_buffer << AST_SUB_NODE_SPACE << "RHS (";
+	rhs->print(file_buffer);
+	file_buffer << ")";
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Boolean_Expr_Ast::Boolean_Expr_Ast(Ast * lhs, Boolean_Op bop, Ast * rhs, int line)
+{
+
+}
+Boolean_Expr_Ast::~Boolean_Expr_Ast()
+{}
+
+Data_Type Boolean_Expr_Ast::get_data_type()
+{
+
+}
+void Boolean_Expr_Ast::set_data_type(Data_Type dt)
+{
+
+}
+
+bool Boolean_Expr_Ast::check_ast()
+{
+
+}
+
+void Boolean_Expr_Ast::print(ostream & file_buffer)
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 Data_Type Arithmetic_Expr_Ast::get_data_type()
 {
 	//ADD CODE HERE
