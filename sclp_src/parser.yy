@@ -28,7 +28,7 @@
 %token <int_value> INTEGER_NUMBER
 %token <float_value> DOUBLE_NUMBER
 %token <string_value> NAME
-%token VOID INTEGER FLOAT ASSIGN WHILE IF DO ELSE
+%token VOID INTEGER FLOAT ASSIGN WHILE IF DO
 // %token FOR GOTO SWITCH 
 // %token COLON QMARK
 // %token LT LTE GT GTE EQ NEQ AND OR NOT
@@ -42,7 +42,8 @@
 %left '*' '/'
 %right NOT
 %right UMINUS
-%nonassoc '('
+%nonassoc '(' ELSE
+%left '{'
 
 %type <symbol_table> optional_variable_declaration_list
 %type <symbol_table> variable_declaration_list
@@ -217,6 +218,8 @@ variable_declaration_list:
                 CHECK_INPUT((current_procedure->get_proc_name() != decl_name),
                     "Variable name cannot be same as procedure name", get_line_number());
             }
+            CHECK_INPUT((decl_list->variable_in_symbol_list_check(decl_name) == false), 
+                "Variable is declared twice", get_line_number());
             decl_list->push_symbol(decl_stmt);
         }
         delete decl_stmt_list;
@@ -251,6 +254,8 @@ variable_declaration_list:
                 CHECK_INPUT((current_procedure->get_proc_name() != decl_name),
                     "Variable name cannot be same as procedure name", get_line_number());
             }
+            CHECK_INPUT((decl_list->variable_in_symbol_list_check(decl_name) == false), 
+                "Variable is declared twice", get_line_number());
             decl_list->push_symbol(decl_stmt);
         }
         delete decl_stmt_list;
@@ -335,6 +340,8 @@ variable_list:
         CHECK_INVARIANT(($1 != NULL), "Name cannot be null");
         string name = *$1;
         $3->push_front(name);
+        // for(list<string>::iterator it=$3->begin(); it!=$3->end(); ++it)
+        //     printf("***%s\n", (*it).c_str());
         $$ = $3;
     }
 ;
@@ -381,7 +388,8 @@ block:
 |
     IF '(' bool_expression ')' postblock
     {
-        $$ = (Ast*) new Selection_Statement_Ast($3, $5, (Ast*)NULL, get_line_number());
+        Sequence_Ast * empty = new Sequence_Ast(get_line_number());
+        $$ = (Ast*) new Selection_Statement_Ast($3, $5, (Ast*)empty, get_line_number());
         $$->check_ast();
     }
 |
@@ -390,20 +398,22 @@ block:
         $$ = (Ast*) new Selection_Statement_Ast($3, $5, $7, get_line_number());
         $$->check_ast();
     }
+|
+    '{' statement_list '}'
+    {
+        $$ = $2;
+    }
 ;
 
 postblock:
     assignment_statement
     {
-        Sequence_Ast * seq_ast = new Sequence_Ast(get_line_number());
-        seq_ast->ast_push_back($1);
-        $$ = seq_ast;
-        $$->check_ast();
+        $$ = $1;
     }
 |
-    '{' statement_list '}'
+    block
     {
-        $$ = $2;
+        $$ = $1;
     }
 ;
 

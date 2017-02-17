@@ -3,18 +3,6 @@ void main();
 
 main()
 {
-	int f, g;
-	if(!(f==g))
-	{
-		f = 0;
-	}
-	else
-	{
-		f = 1;
-	}
-
-	if (f ==0)
-	{
-		f = 1;
-	}
+	float f, g;
+	if (f < g){}
 }

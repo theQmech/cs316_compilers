@@ -223,6 +223,7 @@ bool Arithmetic_Expr_Ast::check_ast()
 	// use get_data_type(), typeid()
 	//ADD CODE HERE
 
+
 	if (ast_num_child==zero_arity){
 		return true;
 	}
@@ -235,10 +236,10 @@ bool Arithmetic_Expr_Ast::check_ast()
 		CHECK_INPUT((lhs->get_data_type()==rhs->get_data_type()), "Arithmetic statement data type not compatible", lineno);
 		CHECK_INVARIANT((lhs != NULL), "Lhs of Arithmetic_Expr_Ast cannot be null");
 		CHECK_INVARIANT((rhs != NULL), "Rhs of Arithmetic_Expr_Ast cannot be null");
-		if (lhs->get_data_type()==double_data_type || rhs->get_data_type()==double_data_type)
-			node_data_type = double_data_type;
+		if (lhs->get_data_type() == rhs->get_data_type())
+			node_data_type = lhs->get_data_type();
 		else
-			node_data_type = int_data_type;
+			node_data_type = void_data_type;
 		return true;
 	}
 
@@ -252,6 +253,8 @@ cond(cond){
 	lhs = l;
 	rhs = r;
 	lineno = line;
+	node_data_type = l->get_data_type();
+	ast_num_child = binary_arity;
 }
 Conditional_Operator_Ast::~Conditional_Operator_Ast(){
 	if (!cond)
@@ -263,10 +266,21 @@ Conditional_Operator_Ast::~Conditional_Operator_Ast(){
 }
 
 void Conditional_Operator_Ast::print(ostream & file_buffer){
-	file_buffer<<"Conditional_Operator_Ast__FILLER\n";
-}
+	file_buffer<<"\n"<<AST_NODE_SPACE<<"Arith: Conditional\n";
 
-Code_For_Ast & Conditional_Operator_Ast::compile(){}
+	file_buffer<<AST_SUB_NODE_SPACE<<"COND (";
+	cond->print(file_buffer);
+	file_buffer<<")\n";
+
+	file_buffer<<AST_SUB_NODE_SPACE<<"LHS (";
+	lhs->print(file_buffer);
+	file_buffer<<")\n";
+
+	file_buffer<<AST_SUB_NODE_SPACE<<"RHS (";
+	rhs->print(file_buffer);
+	file_buffer<<")";
+
+}
 
 /////////////////////////////////////////////////////////////////////
 
@@ -434,25 +448,17 @@ bool Relational_Expr_Ast::check_ast()
 }
 
 void Relational_Expr_Ast::print(ostream &file_buffer){
-	if (rel_op == less_equalto)
-		file_buffer << AST_NODE_SPACE << "Condition: LE\n";
-	if (rel_op == less_than)
-		file_buffer<< AST_NODE_SPACE << "Condition: LT \n";
-	if (rel_op == greater_than)
-		file_buffer<< AST_NODE_SPACE << "Condition: GT \n";
-	if (rel_op == greater_equalto)
-		file_buffer<< AST_NODE_SPACE << "Condition: GE\n";
-	if (rel_op == equalto)
-		file_buffer<< AST_NODE_SPACE << "Condition: EQ\n";
-	if (rel_op == not_equalto)
-		file_buffer<< AST_NODE_SPACE << "Condition: NE\n";
-	file_buffer << AST_SUB_NODE_SPACE"LHS (";
-	lhs_condition->print(file_buffer);
-	file_buffer << ")\n";
+	string D[] = {"LTE", "LT", "GT", "GTE", "EQ", "NEQ"};
+	file_buffer<<"\n"<<AST_NODE_SPACE<<"Condition: "<<D[rel_op]<<"\n";
 
-	file_buffer << AST_SUB_NODE_SPACE << "RHS (";
+	file_buffer<<AST_SUB_NODE_SPACE<<"LHS (";
+	lhs_condition->print(file_buffer);
+	file_buffer<<")\n";
+
+	file_buffer<<AST_SUB_NODE_SPACE<<"RHS (";
 	rhs_condition->print(file_buffer);
-	file_buffer << ")";
+	file_buffer<<")";
+
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -461,10 +467,10 @@ Boolean_Expr_Ast::Boolean_Expr_Ast(Ast * lhs, Boolean_Op bop, Ast * rhs, int lin
 lhs_op(lhs),rhs_op(rhs),bool_op(bop){
 	lineno = line;
 	node_data_type = int_data_type;
-	if (bop == boolean_not)
-		ast_num_child = unary_arity;
-	if (bop == boolean_or || bop == boolean_and)
-			ast_num_child = binary_arity;
+	if (lhs && rhs)
+		ast_num_child=binary_arity;
+	else
+		ast_num_child=unary_arity;
 }
 
 Boolean_Expr_Ast::~Boolean_Expr_Ast(){
@@ -491,37 +497,36 @@ bool Boolean_Expr_Ast::check_ast()
 	// use get_data_type(), typeid()
 	//ADD CODE HERE
 
+	if (ast_num_child==unary_arity){
+		CHECK_INVARIANT((rhs_op != NULL), "Rhs of Boolean_Expr_Ast cannot be null");
+		return true;
+	}
 	if (ast_num_child==binary_arity){
 		CHECK_INPUT((lhs_op->get_data_type()==rhs_op->get_data_type()), "Boolean statement data type not compatible", lineno);
 		CHECK_INVARIANT((lhs_op != NULL), "Lhs of Boolean_Expr_Ast cannot be null");
 		CHECK_INVARIANT((rhs_op != NULL), "Rhs of Boolean_Expr_Ast cannot be null");
 		return true;
 	}
-	if (ast_num_child == unary_arity)
-	{
-		CHECK_INPUT((rhs_op->get_data_type()==int_data_type),"Boolean statement data type not compatible", lineno);
-		CHECK_INVARIANT((rhs_op != NULL), "Rhs of Boolean_Expr_Ast cannot be null");
-		return true;
-	}
+
 	CHECK_INPUT(CONTROL_SHOULD_NOT_REACH, "Boolean statement data type not compatible", lineno);
 }
 
 void Boolean_Expr_Ast::print(ostream &file_buffer){
-	if (bool_op == boolean_and)
-		file_buffer<< AST_NODE_SPACE << "Condition: AND\n";
-	if (bool_op == boolean_or)
-		file_buffer<< AST_NODE_SPACE << "Condition: OR\n";
-	if (bool_op == boolean_not)
-		file_buffer<< AST_NODE_SPACE << "Condition: NOT\n";
-	if (ast_num_child == binary_arity)
-	{
-		file_buffer << AST_SUB_NODE_SPACE"LHS (\n";
+	string D[] = {"NOT", "OR", "AND"};
+	file_buffer<<"\n"<<AST_NODE_SPACE<<"Condition: "<<D[bool_op]<<"\n";
+
+	if (lhs_op){
+		file_buffer<<AST_SUB_NODE_SPACE<<"LHS (";
 		lhs_op->print(file_buffer);
-		file_buffer << ")\n";
+		file_buffer<<")";
 	}
-	file_buffer << AST_SUB_NODE_SPACE << "RHS (\n";
-	rhs_op->print(file_buffer);
-	file_buffer << ")";
+
+	if (rhs_op){
+		file_buffer<<AST_SUB_NODE_SPACE<<"RHS (";
+		rhs_op->print(file_buffer);
+		file_buffer<<")";
+	}
+
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -533,25 +538,29 @@ cond(cond),body(body){
 }
 
 void Iteration_Statement_Ast::print(ostream & file_buffer){
-	if (is_do_form)
-	{
-		file_buffer << AST_SPACE << "DO ( \n";
+	file_buffer<<"\n";
+
+	if (is_do_form){
+		file_buffer<<AST_SPACE<<"DO (";
 		body->print(file_buffer);
-		file_buffer << ")\n";
-		file_buffer << AST_SPACE" WHILE CONDITION ( \n";
+		file_buffer<<")\n";
+
+		file_buffer<<AST_SPACE<<"WHILE CONDITION (";
 		cond->print(file_buffer);
-		file_buffer << ")\n";
+		file_buffer<<")";
 	}
-	else
-	{
-		file_buffer <<"\n" << AST_SPACE << "WHILE : \n";
-		file_buffer << AST_SPACE<<"CONDITION ( \n";
+	else{
+		file_buffer<<AST_SPACE<<"WHILE : \n";
+
+		file_buffer<<AST_SPACE<<"CONDITION (";
 		cond->print(file_buffer);
-		file_buffer << ")\n";
-		file_buffer<<AST_SPACE"BODY (\n";
+		file_buffer<<")\n";
+
+		file_buffer<<AST_SPACE<<"BODY (";
 		body->print(file_buffer);
-		file_buffer << ")\n";
+		file_buffer<<")";
 	}
+
 }
 
 Iteration_Statement_Ast::~Iteration_Statement_Ast(){
@@ -561,8 +570,6 @@ Iteration_Statement_Ast::~Iteration_Statement_Ast(){
 		delete body;
 }
 
-Code_For_Ast & Iteration_Statement_Ast::compile(){
-}
 Data_Type Iteration_Statement_Ast::get_data_type(){
 	return node_data_type;
 }
@@ -601,20 +608,16 @@ bool Selection_Statement_Ast::check_ast(){
 }
 
 void Selection_Statement_Ast::print(ostream & file_buffer){
-
-	file_buffer <<"\n" << AST_SPACE << "IF : \n";
-	file_buffer << AST_SPACE<<"CONDITION ( \n";
+	file_buffer<<"\n"<<AST_SPACE<<"IF : ";
+	file_buffer<<"\n"<<AST_SPACE<<"CONDITION (";
 	cond->print(file_buffer);
-	file_buffer << ")\n";
-	file_buffer<<AST_SPACE"THEN (\n";
-	then_part->print(file_buffer);
-	file_buffer << ")\n";
-	file_buffer<<AST_SPACE"ELSE (\n";
-	else_part->print(file_buffer);
-	file_buffer << ")\n";
-}
+	file_buffer<<")\n";
 
-Code_For_Ast & Selection_Statement_Ast::compile(){
+	file_buffer<<AST_SPACE<<"THEN (";
+	then_part->print(file_buffer);
+	file_buffer<<")\n"<<AST_SPACE<<"ELSE (";
+	else_part->print(file_buffer);
+	file_buffer<<")";
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -625,24 +628,17 @@ Sequence_Ast::Sequence_Ast(int line)
 }
 
 Sequence_Ast::~Sequence_Ast()
-{}
-
+{
+}
 void Sequence_Ast::ast_push_back(Ast * ast){
 	statement_list.push_back(ast);
 }
 void Sequence_Ast::print(ostream & file_buffer){
-	file_buffer<<SA_SPACE;
-	file_buffer<<"Sequence Ast: \n";
-	for(list<Ast*>::iterator it = statement_list.begin();it!=statement_list.end();it++)
-	{
-		Ast * as = *it;
-		if (as !=NULL)
-		{
-			as->print(file_buffer);
-		}	
+	file_buffer<<"\n"<<SA_SPACE<<"Sequence Ast:\n";
+	for (list<Ast*>::iterator it=statement_list.begin(); it!=statement_list.end(); ++it){
+		(*it)->print(file_buffer);
 	}
 }
-Code_For_Ast & Sequence_Ast::compile(){}
 
 /////////////////////////////////////////////////////////////////////
 
