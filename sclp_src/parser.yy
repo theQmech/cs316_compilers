@@ -361,7 +361,8 @@ statement_list:
 |
     statement_list block
     {
-        
+        $1->ast_push_back($2);
+        $$ = $1;
     }
 ;
 
