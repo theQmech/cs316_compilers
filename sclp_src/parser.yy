@@ -15,10 +15,6 @@
     float float_value;
     std::string * string_value;
     Ast * ast;
-    Name_Ast * name_ast;
-    Assignment_Ast * assign_ast;
-    Arithmetic_Expr_Ast * arith_ast;
-    Boolean_Expr_Ast * bool_ast;
     Sequence_Ast * sequence_Ast;
     list<string> * list_string;
     pair<Data_Type, list<string>*> * new_decl;
@@ -33,7 +29,7 @@
 // %token COLON QMARK
 // %token LT LTE GT GTE EQ NEQ AND OR NOT
 
-%right QMARK COLON
+%token QMARK COLON
 %left OR
 %left AND
 %left EQ NEQ
@@ -43,7 +39,7 @@
 %right NOT
 %right UMINUS
 %nonassoc '(' ELSE
-%left '{'
+%nonassoc '{'
 
 %type <symbol_table> optional_variable_declaration_list
 %type <symbol_table> variable_declaration_list
@@ -490,7 +486,7 @@ arith_expression:
         }
     }
 |
-    bool_expression QMARK arith_expression COLON arith_expression
+    bool_expression QMARK operand COLON operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Conditional_Operator_Ast($1, $3, $5, get_line_number());
@@ -500,7 +496,7 @@ arith_expression:
 ;
 
 bool_expression:
-    arith_expression LT arith_expression
+    operand LT operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Relational_Expr_Ast($1, less_than, $3, get_line_number());
@@ -508,7 +504,7 @@ bool_expression:
         }
     }
 |
-    arith_expression LTE arith_expression
+    operand LTE operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Relational_Expr_Ast($1, less_equalto, $3, get_line_number());
@@ -516,7 +512,7 @@ bool_expression:
         }
     }
 |
-    arith_expression GT arith_expression
+    operand GT operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Relational_Expr_Ast($1, greater_than, $3, get_line_number());
@@ -524,7 +520,7 @@ bool_expression:
         }
     }
 |
-    arith_expression GTE arith_expression
+    operand GTE operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Relational_Expr_Ast($1, greater_equalto, $3, get_line_number());
@@ -532,7 +528,7 @@ bool_expression:
         }
     }
 |
-    arith_expression NEQ arith_expression
+    operand NEQ operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Relational_Expr_Ast($1, not_equalto, $3, get_line_number());
@@ -540,7 +536,7 @@ bool_expression:
         }
     }
 |
-    arith_expression EQ arith_expression
+    operand EQ operand
     {
         if (NOT_ONLY_PARSE){
             $$ = new Relational_Expr_Ast($1, equalto, $3, get_line_number());

@@ -27,7 +27,7 @@ else    { store_token_name("ELSE"); return Parser::ELSE; }
 [-+*/]  { store_token_name("ARITHOP"); return matched()[0]; }
 
 "<"     { store_token_name("LT"); return Parser::LT; }
-"<="    { store_token_name("LT"); return Parser::LTE; }
+"<="    { store_token_name("LTE"); return Parser::LTE; }
 ">"     { store_token_name("GT"); return Parser::GT; }
 ">="    { store_token_name("GTE"); return Parser::GTE; }
 "=="    { store_token_name("EQ"); return Parser::EQ; }

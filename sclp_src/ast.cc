@@ -448,8 +448,8 @@ bool Relational_Expr_Ast::check_ast()
 }
 
 void Relational_Expr_Ast::print(ostream &file_buffer){
-	string D[] = {"LTE", "LT", "GT", "GTE", "EQ", "NEQ"};
-	file_buffer<<"\n"<<AST_NODE_SPACE<<"Condition: "<<D[rel_op]<<"\n";
+	string D[] = {"LE", "LT", "GT", "GE", "EQ", "NE"};
+	file_buffer<<"\n"<<AST_NODE_SPACE<<"Condition: "<<D[(int)rel_op]<<"\n";
 
 	file_buffer<<AST_SUB_NODE_SPACE<<"LHS (";
 	lhs_condition->print(file_buffer);
@@ -518,7 +518,7 @@ void Boolean_Expr_Ast::print(ostream &file_buffer){
 	if (lhs_op){
 		file_buffer<<AST_SUB_NODE_SPACE<<"LHS (";
 		lhs_op->print(file_buffer);
-		file_buffer<<")";
+		file_buffer<<")\n";
 	}
 
 	if (rhs_op){
