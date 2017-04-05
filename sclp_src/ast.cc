@@ -7,10 +7,8 @@ using namespace std;
 #include"common-classes.hh"
 #include"error-display.hh"
 #include"user-options.hh"
-// #include"local-environment.hh"
 #include"symbol-table.hh"
 #include"ast.hh"
-// #include"sequence-ast.hh"
 #include"procedure.hh"
 #include"program.hh"
 
@@ -18,6 +16,7 @@ Ast::Ast()
 {}
 
 int Ast::labelCounter=0;
+int Ast::optimize_flag=0;
 
 Ast::~Ast()
 {}
@@ -114,6 +113,7 @@ void Assignment_Ast::print(ostream & file_buffer)
 Name_Ast::Name_Ast(string & name, Symbol_Table_Entry & var_entry, int line)
 {
 	variable_symbol_entry = &var_entry;
+	node_data_type = var_entry.get_data_type();
 
 	CHECK_INVARIANT((variable_symbol_entry->get_variable_name() == name),
 		"Variable's symbol entry is not matching its name");
@@ -223,7 +223,6 @@ bool Arithmetic_Expr_Ast::check_ast()
 	// use get_data_type(), typeid()
 	//ADD CODE HERE
 
-
 	if (ast_num_child==zero_arity){
 		return true;
 	}
@@ -236,10 +235,7 @@ bool Arithmetic_Expr_Ast::check_ast()
 		CHECK_INPUT((lhs->get_data_type()==rhs->get_data_type()), "Arithmetic statement data type not compatible", lineno);
 		CHECK_INVARIANT((lhs != NULL), "Lhs of Arithmetic_Expr_Ast cannot be null");
 		CHECK_INVARIANT((rhs != NULL), "Rhs of Arithmetic_Expr_Ast cannot be null");
-		if (lhs->get_data_type() == rhs->get_data_type())
-			node_data_type = lhs->get_data_type();
-		else
-			node_data_type = void_data_type;
+		node_data_type = lhs->get_data_type();
 		return true;
 	}
 
@@ -642,6 +638,39 @@ void Sequence_Ast::print(ostream & file_buffer){
 
 /////////////////////////////////////////////////////////////////////
 
+Return_Ast::Return_Ast(Ast * temp_return, int line){
+	lineno = line;
+	return_variable = temp_return;
+	ast_num_child = unary_arity;
+}
+
+void Return_Ast::set_return_ast(Ast * temp_return){
+	return_variable = temp_return;
+}
+
+Ast * Return_Ast::get_return_ast(){
+	return return_variable;
+}
+
+Return_Ast::~Return_Ast(){}
+
+void Return_Ast::print(ostream & file_buffer){
+
+}
+
+Code_For_Ast & Return_Ast::compile(){
+
+}
+
+void Return_Ast::print_assembly(ostream & file_buffer){
+
+}
+
+void Return_Ast::print_icode(ostream & file_buffer){
+
+}
+
+/////////////////////////////////////////////////////////////////////
 
 template class Number_Ast<double>;
 template class Number_Ast<int>;

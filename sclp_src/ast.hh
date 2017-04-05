@@ -6,6 +6,9 @@
 #include<iomanip>
 #include<typeinfo>
 #include<list>
+#include<map>
+#include<set>
+#include<queue>
 
 #define AST_SPACE "         "
 #define AST_NODE_SPACE "            "
@@ -14,7 +17,66 @@
 
 using namespace std;
 
+#ifndef SPIM_HH
+#define SPIM_HH
+typedef enum
+{
+	none,	/* dummy to indicate no register */
+	zero,	/* constant register */
+	v0,	/* expression result register */
+	v1,	/* function result register */
+	a0,	/* argument register */
+	a1, a2, a3,
+	t0,      /* temporary caller-save registers */
+	t1, t2, t3, t4, t5, t6, t7, t8, t9, 
+	s0,	/* temporary callee-save registers */ 
+	s1, s2, s3, s4, s5, s6, s7,
+	mfc,	/* float register to int register */
+	mtc,	/* int register to float register */
+	f0, 	/* floating point registers */
+	f2, f4, f6, f8,
+	f10, f12, f14, f16, f18,
+	f20, f22, f24, f26, f28, f30,
+	gp,	/* global data pointer register */
+	sp,	/* stack pointer register */
+	fp,	/* frame pointer register */
+	ra	/* return address register */
+} Spim_Register;
+#endif
+
+
 class Ast;
+class Block;
+class CFG;
+
+class Block
+{
+public:
+	list<Icode_Stmt *> instructions;
+	list<int> previous;
+	list<int> next;
+	set<Spim_Register> In, Out;
+
+	Block();
+	~Block();
+	void add_stmt(Icode_Stmt * stmt);
+	void add_prev(int id);
+	void add_succ(int id);
+	void eliminate(vector<Block *> nodes);
+	int get_size();
+};
+
+class CFG
+{
+	vector<Block *> nodes;
+public:
+	CFG(list<Icode_Stmt *> inst);
+	~CFG();
+	Block * get_node(int n);
+	void optimise();
+	list<Icode_Stmt *> toInstructionList();
+	void dead_code_eliminate();
+};
 
 class Ast
 {
@@ -30,6 +92,7 @@ protected:
 	Data_Type node_data_type;
 	Ast_Arity ast_num_child;
 	static int labelCounter;
+	static int optimize_flag;
 	int lineno;
 	string get_new_label(){
 
@@ -184,7 +247,6 @@ public:
 	Code_For_Ast & compile();
 };
 
-
 class Arithmetic_Expr_Ast:public Ast
 {
 protected:
@@ -277,6 +339,20 @@ public:
 	Sequence_Ast(int line);
 	~Sequence_Ast();
   void ast_push_back(Ast * ast);
+	void print(ostream & file_buffer);
+	Code_For_Ast & compile();
+	void print_assembly(ostream & file_buffer);
+	void print_icode(ostream & file_buffer);
+};
+
+class Return_Ast: public Ast{
+	Ast * return_variable;
+	
+public:
+	Return_Ast(Ast * temp_return, int line);
+	void set_return_ast(Ast * temp_return);
+	Ast * get_return_ast();
+	~Return_Ast();
 	void print(ostream & file_buffer);
 	Code_For_Ast & compile();
 	void print_assembly(ostream & file_buffer);

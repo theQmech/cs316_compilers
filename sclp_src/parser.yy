@@ -29,7 +29,7 @@
 // %token COLON QMARK
 // %token LT LTE GT GTE EQ NEQ AND OR NOT
 
-%token QMARK COLON
+%token QMARK COLON RETURN
 %left OR
 %left AND
 %left EQ NEQ
@@ -113,14 +113,52 @@ declaration_list:
 ;
 
 procedure_declaration:
-    VOID NAME '(' ')' ';'
+    VOID NAME '(' parameter_list ')' ';'
     {
     if (NOT_ONLY_PARSE)
     {
         CHECK_INVARIANT(($2 != NULL), "Procedure name cannot be null");
-        CHECK_INVARIANT((*$2 == "main"), "Procedure name must be main in declaration");
+        // CHECK_INVARIANT((*$2 == "main"), "Procedure name must be main in declaration");
     }
     }
+|
+    INTEGER NAME '(' parameter_list ')' ';'
+    {
+    if (NOT_ONLY_PARSE)
+    {
+        CHECK_INVARIANT(($2 != NULL), "Procedure name cannot be null");
+    }
+    }
+|
+    FLOAT NAME '(' parameter_list ')' ';'
+    {
+    if (NOT_ONLY_PARSE)
+    {
+        CHECK_INVARIANT(($2 != NULL), "Procedure name cannot be null");
+    }
+    }
+;
+
+parameter_list:
+{
+
+}
+|
+parameter_list ',' parameter
+{
+
+}
+;
+
+parameter:
+INTEGER NAME
+{
+
+}
+|
+FLOAT NAME{
+
+}
 ;
 
 procedure_definition:
@@ -366,6 +404,19 @@ statement_list:
     {
         $1->ast_push_back($2);
         $$ = $1;
+    }
+|
+    statement_list return_statement
+    {
+        $1->ast_push_back($2);
+        $$ = $1;
+    }
+;
+
+return_statement:
+    RETURN variable ';'
+    {
+        
     }
 ;
 

@@ -20,6 +20,7 @@ while   { store_token_name("WHILE"); return Parser::WHILE; }
 do      { store_token_name("DO"); return Parser::DO; }
 if      { store_token_name("IF"); return Parser::IF; }
 else    { store_token_name("ELSE"); return Parser::ELSE; }
+return  { store_token_name("RETURN"); return Parser::RETURN; }
 
 "="     { store_token_name("ASSIGN_OP"); return Parser::ASSIGN; }
 "?"     { store_token_name("QMARK"); return Parser::QMARK; }
