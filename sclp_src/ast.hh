@@ -338,7 +338,7 @@ class Sequence_Ast: public Ast{
 public:
 	Sequence_Ast(int line);
 	~Sequence_Ast();
-  void ast_push_back(Ast * ast);
+	void ast_push_back(Ast * ast);
 	void print(ostream & file_buffer);
 	Code_For_Ast & compile();
 	void print_assembly(ostream & file_buffer);
@@ -347,7 +347,7 @@ public:
 
 class Return_Ast: public Ast{
 	Ast * return_variable;
-	
+
 public:
 	Return_Ast(Ast * temp_return, int line);
 	void set_return_ast(Ast * temp_return);

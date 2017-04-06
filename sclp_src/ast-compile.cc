@@ -748,6 +748,18 @@ Code_For_Ast & Sequence_Ast::compile()
 			it!=statement_list.end(); ++it){
 		Code_For_Ast curr = (*it)->compile();
 		sa_icode_list.splice(sa_icode_list.end(), curr.get_icode_list());
+
+		Ics_Opd * opd = new Mem_Addr_Opd(*variable_symbol_entry);
+		Ics_Opd * result_opd = new Register_Addr_Opd(reg);
+
+		Icode_Stmt * ic_stmt;
+		if (node_data_type == int_data_type)
+			ic_stmt = new Move_IC_Stmt(Tgt_Op::load, opd, result_opd);
+		else if (node_data_type == double_data_type)
+			ic_stmt = new Move_IC_Stmt(Tgt_Op::load_d, opd, result_opd);
+
+
+
 	}
 
 	if (flag){
@@ -775,6 +787,39 @@ void Sequence_Ast::print_icode(ostream & file_buffer)
 			it!=sa_icode_list.end(); ++it){
 		(*it)->print_icode(file_buffer);
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+Code_For_Ast & Return_Ast::compile(){
+	// CHECK_INVARIANT();
+	// return_variable is null iff return type is void_data_type
+
+	list<Icode_Stmt *> icode_list;
+	Register_Descriptor * reg;
+
+	if (return_variable != NULL){
+		Code_For_Ast & expr_stmt = return_variable->compile();
+		reg = expr_stmt.get_reg();
+		// Ics_Opd * lhs_opd = new Register_Addr_Opd(lhs_reg);
+		// lhs_reg->set_use_for_expr_result();
+		
+		add the storing to v1 statement
+	}
+
+	Icode_Stmt * new_ic = new Control_Flow_IC_Stmt(ret_inst, NULL, NULL, "");
+	icode_list.push_back(new_ic);
+
+	Code_For_Ast *ret_val = new Code_For_Ast(icode_list, reg);
+	return ret_val;
+}
+
+void Return_Ast::print_assembly(ostream & file_buffer){
+
+}
+
+void Return_Ast::print_icode(ostream & file_buffer){
+
 }
 
 //////////////////////////////////////////////////////////////////////////////

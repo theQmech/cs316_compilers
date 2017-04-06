@@ -641,11 +641,22 @@ void Sequence_Ast::print(ostream & file_buffer){
 Return_Ast::Return_Ast(Ast * temp_return, int line){
 	lineno = line;
 	return_variable = temp_return;
-	ast_num_child = unary_arity;
+	if (return_variable == NULL){
+		ast_num_child = zero_arity;
+		node_data_type = void_data_type;
+	}
+	else{
+		ast_num_child = unary_arity;
+		node_data_type = return_variable->get_data_type();
+	}
 }
 
 void Return_Ast::set_return_ast(Ast * temp_return){
 	return_variable = temp_return;
+	if (return_variable == NULL)
+		node_data_type = void_data_type;
+	else
+		node_data_type = return_variable->get_data_type();
 }
 
 Ast * Return_Ast::get_return_ast(){
@@ -655,19 +666,7 @@ Ast * Return_Ast::get_return_ast(){
 Return_Ast::~Return_Ast(){}
 
 void Return_Ast::print(ostream & file_buffer){
-
-}
-
-Code_For_Ast & Return_Ast::compile(){
-
-}
-
-void Return_Ast::print_assembly(ostream & file_buffer){
-
-}
-
-void Return_Ast::print_icode(ostream & file_buffer){
-
+	printf("Return_Ast::print not defined\n");
 }
 
 /////////////////////////////////////////////////////////////////////

@@ -27,10 +27,12 @@ public:
 	~Procedure();
 
 	string get_proc_name();
-  	void set_sequence_ast(Sequence_Ast & sa);
+	void set_sequence_ast(Sequence_Ast & sa);
 	void set_local_list(Symbol_Table & new_list);
 	Data_Type get_return_type();
 	Symbol_Table_Entry & get_symbol_table_entry(string variable_name);
+	bool match_prototype(Symbol_Table &new_sym_table);
+	void push_symbol(Symbol_Table_Entry * variable);
 
 	void print(ostream & file_buffer);
 	void print_sym(ostream & file_buffer);

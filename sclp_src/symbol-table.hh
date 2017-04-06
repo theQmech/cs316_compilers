@@ -14,7 +14,8 @@ typedef enum
 	void_data_type,
 	int_data_type,
 	double_data_type,
-	string_data_type
+	string_data_type,
+	func_data_type
 } Data_Type;
 
 typedef enum
@@ -73,6 +74,14 @@ public:
 
 	void push_symbol(Symbol_Table_Entry * variable);
 
+	// DONT DO THIS:
+		// if a variable of proc_name exists already, then don't push 
+		// and "remove everything" concerned about the proc and the symbol table and 
+		// DONOT RAISE AN ERROR (as per reference binary)
+	// DO THIS:
+		// simply append, 
+	void append_proc_decls(Symbol_Table * procs_table);
+
 	bool variable_in_symbol_list_check(string variable);
 	bool variable_in_formal_list_check(string variable);
 
@@ -103,6 +112,7 @@ class Symbol_Table_Entry
 	string variable_name;
 	Data_Type variable_data_type;
 	Table_Scope scope;
+	Procedure * proc; //only if variable_data_type = func_data_type
 
 	int lineno;
 
@@ -129,6 +139,9 @@ public:
 	Data_Type get_data_type();
 	void set_data_type(Data_Type dt);
 	string get_variable_name();
+	Procedure * get_proc();
+
+	void set_procedure(Procedure * inst_proc);
 
 	//compile
 	void set_start_offset(int num);

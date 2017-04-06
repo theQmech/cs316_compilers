@@ -1,22 +1,49 @@
 program:
-	declaration_list procedure_definition
+	declaration_list procedure_definition_list
 ;
 
 declaration_list:
+	procedure_declaration_list
+|
+	variable_declaration_list procedure_declaration_list
+|
+	procedure_declaration_list variable_declaration_list
+;
+
+procedure_declaration_list:
 	procedure_declaration
 |
-	variable_declaration_list procedure_declaration
-|
-	procedure_declaration variable_declaration_list
+	procedure_declaration_list procedure_declaration
 ;
 
 procedure_declaration:
-	VOID NAME '(' ')' ';'
+    VOID NAME '(' parameter_list ')' ';'
+|
+    INTEGER NAME '(' parameter_list ')' ';'
+|
+    FLOAT NAME '(' parameter_list ')' ';'
+;
+
+procedure_definition_list:
+	procedure_definition
+|
+	procedure_definition_list procedure_definition
 ;
 
 procedure_definition:
-	NAME '(' ')'
-	'{' optional_variable_declaration_list statement_list '}'
+	NAME '(' parameter_list ')'
+	'{' optional_variable_declaration_list statement_list return_stmt'}'
+;
+
+parameter_list:
+|
+	parameter_list ',' parameter
+;
+
+parameter:
+	INTEGER NAME
+|
+	FLOAT NAME
 ;
 
 optional_variable_declaration_list:
@@ -52,6 +79,12 @@ statement_list:
 	statement_list assignment_statement
 |
 	statement_list block
+;
+
+return_stmt:
+	RETURN ';'
+|
+	RETURN expression_term ';'
 ;
 
 block:

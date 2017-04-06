@@ -72,6 +72,17 @@ void Symbol_Table::push_symbol(Symbol_Table_Entry * variable)
 	variable_table.push_back(variable);
 }
 
+void Symbol_Table::append_proc_decls(Symbol_Table * procs_table)
+{
+	list<Symbol_Table_Entry *> procs_list = procs_table->get_table();
+	for (list<Symbol_Table_Entry *>::iterator it = procs_list.begin();
+		it!=procs_list.end(); ++it){
+		push_symbol(*it);
+	}
+	delete procs_table;
+}
+
+
 list<Symbol_Table_Entry *> & Symbol_Table::get_table()
 {
 	return variable_table;
@@ -207,4 +218,8 @@ void Symbol_Table_Entry::set_data_type(Data_Type dt)
 string Symbol_Table_Entry::get_variable_name()
 {
 	return variable_name;
+}
+
+Procedure * Symbol_Table_Entry::get_proc(){
+	return proc;
 }
