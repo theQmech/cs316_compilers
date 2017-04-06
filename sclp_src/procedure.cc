@@ -15,7 +15,7 @@ Procedure::Procedure(Data_Type proc_return_type, string proc_name, int line){
 }
 
 Procedure::~Procedure(){
-	printf("Procedure::~Procedure not defined");
+	printf("Procedure::~Procedure not defined\n");
 }
 
 string Procedure::get_proc_name(){

@@ -130,6 +130,7 @@ procedure_declaration_list:
     procedure_declaration
     {
         $$ = new Symbol_Table();
+        $$->push_symbol($1);
     }
 |
     procedure_declaration_list procedure_declaration
@@ -153,6 +154,7 @@ procedure_declaration:
         Procedure * proc = new Procedure(void_data_type, *$2, get_line_number());
         proc->set_local_list(*$4);
         program_object.insert_proc_in_map(proc);
+        $$->set_proc(proc);
     }
     }
 |
@@ -167,6 +169,7 @@ procedure_declaration:
         Procedure * proc = new Procedure(int_data_type, *$2, get_line_number());
         proc->set_local_list(*$4);
         program_object.insert_proc_in_map(proc);
+        $$->set_proc(proc);
     }
     }
 |
@@ -181,6 +184,7 @@ procedure_declaration:
         Procedure * proc = new Procedure(double_data_type, *$2, get_line_number());
         proc->set_local_list(*$4);
         program_object.insert_proc_in_map(proc);
+        $$->set_proc(proc);
     }
     }
 ;
@@ -238,9 +242,6 @@ procedure_definition:
             "Procedure prototype doesn't match", get_line_number());
 
         current_procedure = proc_entry.get_proc();
-
-        CHECK_INPUT ((program_object.variable_in_symbol_list_check(*$1) == false),
-            "Procedure name cannot be same as global variable", get_line_number());
     }
     }
 
@@ -320,7 +321,7 @@ variable_declaration_list:
             CHECK_INVARIANT((decl_stmt != NULL), "Non-terminal declaration statement cannot be null");
 
             string decl_name = decl_stmt->get_variable_name();
-            CHECK_INPUT ((program_object.variable_proc_name_check(decl_name) == false),
+            CHECK_INPUT ((program_object.variable_proc_name_check(decl_name) == true),
                 "Variable name cannot be same as the procedure name", get_line_number());
             if(current_procedure != NULL)
             {

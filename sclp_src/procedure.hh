@@ -15,6 +15,7 @@ class Procedure;
 
 class Procedure
 {
+public:
 	Data_Type return_type;
 	string name;
 	Symbol_Table local_symbol_table;
@@ -22,7 +23,6 @@ class Procedure
 
 	int lineno;
 
-public:
 	Procedure(Data_Type proc_return_type, string proc_name, int line);
 	~Procedure();
 

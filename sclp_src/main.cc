@@ -46,7 +46,6 @@ int main(int argc, char * argv[])
 		{
 		#ifdef COMPILE
 			program_object.compile();
-
 			if (command_options.is_show_symtab_selected())
 				program_object.print_sym();
 		#else

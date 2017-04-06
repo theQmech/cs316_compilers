@@ -100,6 +100,7 @@ void Symbol_Table::global_list_in_proc_map_check()
 
 bool Symbol_Table::variable_in_symbol_list_check(string variable)
 {
+	// cout<<"here "<<variable_table.size()<<endl;
 	list<Symbol_Table_Entry *>::iterator i;
 	for (i = variable_table.begin(); i != variable_table.end(); i++)
 	{
@@ -219,6 +220,11 @@ string Symbol_Table_Entry::get_variable_name()
 {
 	return variable_name;
 }
+
+void Symbol_Table_Entry::set_proc(Procedure * new_proc){
+	proc = new_proc;
+}
+
 
 Procedure * Symbol_Table_Entry::get_proc(){
 	return proc;

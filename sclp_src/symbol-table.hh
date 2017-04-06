@@ -139,6 +139,7 @@ public:
 	Data_Type get_data_type();
 	void set_data_type(Data_Type dt);
 	string get_variable_name();
+	void set_proc(Procedure * new_proc);
 	Procedure * get_proc();
 
 	void set_procedure(Procedure * inst_proc);

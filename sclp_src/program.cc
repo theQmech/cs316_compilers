@@ -18,10 +18,10 @@ Program::~Program(){
 
 void Program::delete_all(){
 	delete procedure;
-	for(map<string, Procedure *>::iterator it = proc_map.begin();
-		it!=proc_map.end(); ++it){
-		delete it->second;
-	}
+	// for(map<string, Procedure *>::iterator it = proc_map.begin();
+	// 	it!=proc_map.end(); ++it){
+	// 	delete it->second;
+	// }
 }
 
 void Program::set_procedure(Procedure * proc, int line){
@@ -75,6 +75,7 @@ void Program::global_list_in_proc_check(){
 
 // compile
 void Program::compile(){
+	procedure->compile();
 	printf("Program::compile not defined yet\n");
 }
 

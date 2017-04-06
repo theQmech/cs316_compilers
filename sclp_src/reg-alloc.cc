@@ -282,7 +282,7 @@ Register_Descriptor * Machine_Description::get_new_register()
 		CHECK_INVARIANT((reg_desc != NULL), "Null register descriptor in the register table");
 
 		if (reg_desc->is_free<dt>()) 
-		{       
+		{
 			reg_desc->set_register_occupied();
 			return reg_desc;
 		}
@@ -339,6 +339,7 @@ template bool Register_Descriptor::is_free<float_reg>();
 
 template Register_Descriptor * Machine_Description::get_new_register<gp_data>();
 template Register_Descriptor * Machine_Description::get_new_register<float_reg>();
+template Register_Descriptor * Machine_Description::get_new_register<fn_result>();
 
 template int Machine_Description::count_free_register<gp_data>();
 template int Machine_Description::count_free_register<float_reg>();
