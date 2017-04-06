@@ -359,4 +359,16 @@ public:
 	void print_icode(ostream & file_buffer);
 };
 
+class Func_Call_Ast: public Ast{
+	Procedure * proc;
+	list<Ast *> * args;
+public:
+	Func_Call_Ast(Procedure * _proc, list<Ast*> * _args);
+	~Func_Call_Ast();
+	void print(ostream & file_buffer);
+	Code_For_Ast & compile();
+	void print_assembly(ostream & file_buffer);
+	void print_icode(ostream & file_buffer);
+};
+
 #endif

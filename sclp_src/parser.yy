@@ -16,6 +16,8 @@
     std::string * string_value;
     Ast * ast;
     Sequence_Ast * sequence_ast;
+    Func_Call_Ast * func_call_ast;
+    list<Ast *> * list_ast;
     Return_Ast * return_ast;
     list<string> * list_string;
     pair<Data_Type, list<string>*> * new_decl;
@@ -63,6 +65,9 @@
 %type <sequence_ast> statement_list
 %type <return_ast> return_stmt
 %type <list_string> variable_list
+%type <list_ast> arguments
+%type <func_call_ast> func_call
+
 
 %start program
 
@@ -194,6 +199,14 @@ parameter_list:
     $$ = new Symbol_Table();
 }
 |
+parameter
+{
+    $$ = new Symbol_Table();
+    CHECK_INPUT($$->variable_in_symbol_list_check($1->get_variable_name()),
+        "Formal Parameter declared twice", get_line_number());
+    $$->push_symbol($1);
+}
+|
 parameter_list ',' parameter
 {
     $$ = $1;
@@ -207,10 +220,12 @@ parameter:
 INTEGER NAME
 {
     $$ = new Symbol_Table_Entry(*$2, int_data_type, get_line_number());
+    $$->set_symbol_scope(formal);
 }
 |
 FLOAT NAME{
     $$ = new Symbol_Table_Entry(*$2, double_data_type, get_line_number());
+    $$->set_symbol_scope(formal);
 }
 ;
 
@@ -238,8 +253,8 @@ procedure_definition:
         Symbol_Table_Entry proc_entry = program_object.get_symbol_table_entry(*$1);
         CHECK_INPUT(proc_entry.get_data_type()==func_data_type,
             "Procedure name cannot be same as global variable", get_line_number());
-        CHECK_INPUT(proc_entry.get_proc()->match_prototype(*$3),
-            "Procedure prototype doesn't match", get_line_number());
+        // CHECK_INPUT(proc_entry.get_proc()->match_prototype(*$3),
+        //     "Procedure prototype doesn't match", get_line_number());
 
         current_procedure = proc_entry.get_proc();
     }
@@ -474,6 +489,16 @@ statement_list:
     }
     }
 |
+    statement_list func_call
+    {
+    if (NOT_ONLY_PARSE)
+    {
+        //ADD CODE HERE
+        $1->ast_push_back($2);
+        $$ = $1;
+    }
+    }
+|
     statement_list block
     {
         $1->ast_push_back($2);
@@ -485,6 +510,43 @@ statement_list:
         $1->ast_push_back($2);
         $$ = $1;
     }
+;
+
+func_call:
+    NAME '(' arguments ')' ';'
+{
+    CHECK_INVARIANT($3!=NULL, "func_call arguments cannot be NULL")
+    string func_name = *$1;
+    //check if prototype and definition exist in global map
+    CHECK_INVARIANT(program_object.variable_proc_name_check(func_name),
+        "Function prototype of the called function cannot be null");
+    Procedure * proc = program_object.get_proc(func_name);
+    list<Ast*> * args = $3;
+    int argc=0;
+    for(list<Ast*>::iterator it = args->begin(); it!=args->end(); ++it, ++argc){
+        CHECK_INPUT((*it)->get_data_type()==proc->get_formal_by_index(argc).get_data_type(),
+            "Actual and formal parameters data types are not matching", get_line_number());
+    }
+    $$ = new Func_Call_Ast(proc, args);
+}
+;
+
+arguments:
+{
+    $$ = new list<Ast*>();
+}
+|
+arith_expression
+{
+    $$ = new list<Ast*>();
+    $$->push_back($1);
+}
+|
+arguments ',' arith_expression
+{
+    $$ = $1;
+    $$->push_back($3);
+}
 ;
 
 return_stmt:
