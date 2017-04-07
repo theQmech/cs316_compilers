@@ -812,11 +812,25 @@ Code_For_Ast & Return_Ast::compile(){
 }
 
 void Return_Ast::print_assembly(ostream & file_buffer){
-
+	printf("Return_Ast::print_assembly not defined\n");
 }
 
 void Return_Ast::print_icode(ostream & file_buffer){
+	printf("Return_Ast::print_icode not defined\n");
+}
 
+//////////////////////////////////////////////////////////////////////////////
+
+Code_For_Ast & Func_Call_Ast::compile(){
+	printf("Func_Call_Ast::compile not defined\n");
+}
+
+void Func_Call_Ast::print_assembly(ostream & file_buffer){
+	printf("Func_Call_Ast::print_assembly not defined\n");
+}
+
+void Func_Call_Ast::print_icode(ostream & file_buffer){
+	printf("Func_Call_Ast::print_icode not defined\n");
 }
 
 //////////////////////////////////////////////////////////////////////////////

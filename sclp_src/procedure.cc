@@ -39,6 +39,23 @@ Symbol_Table_Entry & Procedure::get_symbol_table_entry(string variable_name){
 	return local_symbol_table.get_symbol_table_entry(variable_name);
 }
 
+Symbol_Table_Entry & Procedure::get_formal_by_index(int n){
+	list<Symbol_Table_Entry *> entries = local_symbol_table.get_table();
+	list<Symbol_Table_Entry *>::iterator it = entries.begin();
+	int idx = 0;
+	while(it!=entries.end()){
+		if ((*it)->get_symbol_scope() == formal){
+			if (idx==n)
+				return **it;
+			else
+				++idx;
+		}
+		++it;
+	}
+	CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, 
+		"Symbol_Table::get_formal_by_index() out of reach");
+}
+
 bool Procedure::match_prototype(Symbol_Table &new_sym_table){
 	(local_symbol_table==new_sym_table);
 	return true;

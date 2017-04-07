@@ -569,9 +569,11 @@ Iteration_Statement_Ast::~Iteration_Statement_Ast(){
 Data_Type Iteration_Statement_Ast::get_data_type(){
 	return node_data_type;
 }
+
 void Iteration_Statement_Ast::set_data_type(Data_Type dt){
 	node_data_type = dt;
 }
+
 bool Iteration_Statement_Ast::check_ast(){
 	return (cond && body);
 }
@@ -595,6 +597,7 @@ Selection_Statement_Ast::~Selection_Statement_Ast(){
 Data_Type Selection_Statement_Ast::get_data_type(){
 	return node_data_type;
 }
+
 void Selection_Statement_Ast::set_data_type(Data_Type dt){
 	node_data_type = dt;
 }
@@ -626,9 +629,11 @@ Sequence_Ast::Sequence_Ast(int line)
 Sequence_Ast::~Sequence_Ast()
 {
 }
+
 void Sequence_Ast::ast_push_back(Ast * ast){
 	statement_list.push_back(ast);
 }
+
 void Sequence_Ast::print(ostream & file_buffer){
 	file_buffer<<"\n"<<SA_SPACE<<"Sequence Ast:\n";
 	for (list<Ast*>::iterator it=statement_list.begin(); it!=statement_list.end(); ++it){
@@ -670,6 +675,22 @@ void Return_Ast::print(ostream & file_buffer){
 }
 
 /////////////////////////////////////////////////////////////////////
+
+Func_Call_Ast::Func_Call_Ast(Procedure * _proc, list<Ast*> * _args){
+	proc = _proc;
+	args = _args;
+}
+
+Func_Call_Ast::~Func_Call_Ast(){
+
+}
+
+void Func_Call_Ast::print(ostream & file_buffer){
+	printf("Func_Call_Ast::print not defined\n");
+}
+
+/////////////////////////////////////////////////////////////////////
+
 
 template class Number_Ast<double>;
 template class Number_Ast<int>;

@@ -73,6 +73,12 @@ void Program::global_list_in_proc_check(){
 	printf("Program::global_list_in_proc_check not defined yet\n");
 }
 
+Procedure * Program::get_proc(string name){
+	if (proc_map.find(name)!=proc_map.end())
+		return proc_map[name];
+	CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Program::get_proc() proc must exist\n");
+}
+
 // compile
 void Program::compile(){
 	procedure->compile();

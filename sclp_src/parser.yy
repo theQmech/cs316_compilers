@@ -141,7 +141,7 @@ procedure_declaration_list:
     procedure_declaration_list procedure_declaration
     {
         $$ = $1;
-        CHECK_INVARIANT($$->variable_in_symbol_list_check($2->get_variable_name()),
+        CHECK_INVARIANT(!($$->variable_in_symbol_list_check($2->get_variable_name())),
             "Overloading of the procedure is not allowed");
         $$->push_symbol($2);
     }
@@ -518,10 +518,12 @@ func_call:
     CHECK_INVARIANT($3!=NULL, "func_call arguments cannot be NULL")
     string func_name = *$1;
     //check if prototype and definition exist in global map
-    CHECK_INVARIANT(program_object.variable_proc_name_check(func_name),
-        "Function prototype of the called function cannot be null");
+    CHECK_INPUT(program_object.variable_proc_name_check(func_name),
+        "Function prototype of the called function cannot be null", get_line_number());
     Procedure * proc = program_object.get_proc(func_name);
     list<Ast*> * args = $3;
+    CHECK_INVARIANT(proc!=NULL, "func_call proc can't be NULL");
+    CHECK_INVARIANT(args!=NULL, "func_call args can't be NULL");
     int argc=0;
     for(list<Ast*>::iterator it = args->begin(); it!=args->end(); ++it, ++argc){
         CHECK_INPUT((*it)->get_data_type()==proc->get_formal_by_index(argc).get_data_type(),
