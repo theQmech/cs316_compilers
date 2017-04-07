@@ -29,38 +29,105 @@ int Symbol_Table::get_size()
 	return size_in_bytes;
 }
 
+// void Symbol_Table::assign_offsets()
+// {
+// 	size_in_bytes = start_offset_of_first_symbol;
+// 	int offset;
+
+// 	list<Symbol_Table_Entry *>::iterator i;
+// 	for (i = variable_table.begin(); i != variable_table.end(); i++)
+// 	{
+// 		if ((*i)->get_data_type() == func_data_type)
+// 			continue;
+
+// 		int size;
+// 		if (((*i)->get_symbol_scope() == local) || ((*i)->get_symbol_scope() == global))
+// 		{
+// 			size = -(get_size_of_value_type((*i)->get_data_type()));
+
+// 			(*i)->set_start_offset(size_in_bytes);
+// 			size_in_bytes += size;
+// 			(*i)->set_end_offset(size_in_bytes);
+// 		}
+
+// 		else if ((*i)->get_symbol_scope() == formal)
+// 		{
+// 			size = get_size_of_value_type((*i)->get_data_type());
+
+// 			(*i)->set_end_offset(size_in_bytes);
+// 			size_in_bytes += size;
+// 			(*i)->set_start_offset(size_in_bytes);
+// 		}
+
+// 		else{
+// 			cout<<(*i)->get_variable_name()<<endl;
+// 			cout<<(*i)->get_symbol_scope()<<endl;
+// 			CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Illegal option");
+// 		}
+
+// 		cout<<((*i)->get_variable_name())<<" ";
+// 		cout<<(*i)->get_symbol_scope()<<" ";
+// 		cout<<(*i)->get_start_offset()<<" ";
+// 		cout<<(*i)->get_end_offset()<<" ";
+// 	}
+// 	cout<<endl;
+// }
+
 void Symbol_Table::assign_offsets()
 {
-	size_in_bytes = start_offset_of_first_symbol;
-	int offset;
+	// size_in_bytes = start_offset_of_first_symbol;
+	// int offset = 8;
+
+	size_in_bytes = 0;
+
+	int offset_formal = 8;
+	int offset_local = 0;
 
 	list<Symbol_Table_Entry *>::iterator i;
 	for (i = variable_table.begin(); i != variable_table.end(); i++)
 	{
+		if ((*i)->get_data_type() == func_data_type)
+			continue;
+
 		int size;
 		if (((*i)->get_symbol_scope() == local) || ((*i)->get_symbol_scope() == global))
 		{
-			size = -(get_size_of_value_type((*i)->get_data_type()));
+			size = get_size_of_value_type((*i)->get_data_type());
 
-			(*i)->set_start_offset(size_in_bytes);
+			(*i)->set_start_offset(offset_local);
+			offset_local -= size;
+			(*i)->set_end_offset(offset_local);
+
 			size_in_bytes += size;
-			(*i)->set_end_offset(size_in_bytes);
 		}
 
 		else if ((*i)->get_symbol_scope() == formal)
 		{
 			size = get_size_of_value_type((*i)->get_data_type());
 
-			(*i)->set_end_offset(size_in_bytes);
-			size_in_bytes += size;
-			(*i)->set_start_offset(size_in_bytes);
+			(*i)->set_end_offset(offset_formal);
+			offset_formal += size;
+			(*i)->set_start_offset(offset_formal);
+
+			// size_in_bytes += size;
 		}
 
-		else
+		else{
+			cout<<(*i)->get_variable_name()<<endl;
+			cout<<(*i)->get_symbol_scope()<<endl;
 			CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Illegal option");
+		}
 
-
+		// cout<<((*i)->get_variable_name())<<" ";
+		// cout<<(*i)->get_symbol_scope()<<" ";
+		// cout<<(*i)->get_start_offset()<<" ";
+		// cout<<(*i)->get_end_offset()<<" ";
+		// cout<<"\t";
 	}
+
+	start_offset_of_first_symbol = offset_formal;
+
+	// cout<<endl;
 }
 
 int Symbol_Table::get_size_of_value_type(Data_Type dt)
@@ -70,7 +137,10 @@ int Symbol_Table::get_size_of_value_type(Data_Type dt)
 	case int_data_type: return 4; break;
 	case double_data_type: return 8; break;
 	case void_data_type: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Attempt to seek size of type void");
-	default: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Data type not supperted");
+	default: 
+		// int *a = (NULL);
+		// cout<<*a;
+		CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Data type not supperted");
 	}
 }
 

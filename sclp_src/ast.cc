@@ -656,6 +656,10 @@ Return_Ast::Return_Ast(Ast * temp_return, int line){
 	}
 }
 
+Data_Type Return_Ast::get_data_type(){
+	return node_data_type;
+}
+
 void Return_Ast::set_return_ast(Ast * temp_return){
 	return_variable = temp_return;
 	if (return_variable == NULL)

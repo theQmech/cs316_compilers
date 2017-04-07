@@ -31,6 +31,14 @@ Mem_Addr_Opd::Mem_Addr_Opd(Symbol_Table_Entry & se)
 	symbol_entry = &se;
 }
 
+Mem_Addr_Opd::Mem_Addr_Opd(Symbol_Table_Entry & se, int off_from_caller_sp) 
+{
+	//TODO
+	symbol_entry = &se;
+	aux_offset_from_sp = off_from_caller_sp;
+}
+
+
 Mem_Addr_Opd & Mem_Addr_Opd::operator=(const Mem_Addr_Opd & rhs)
 {
 	//TODO
@@ -47,13 +55,18 @@ void Mem_Addr_Opd::print_asm_opd(ostream & file_buffer)
 {
 	Table_Scope symbol_scope = symbol_entry->get_symbol_scope();
 
-	CHECK_INVARIANT(((symbol_scope == local) || (symbol_scope == global)), 
-			"Wrong scope value");
+	// CHECK_INVARIANT(((symbol_scope == local) || (symbol_scope == global)), 
+	// 		"Wrong scope value");
 
 	if (symbol_scope == local)
 	{
 		int offset = symbol_entry->get_start_offset();
 		file_buffer << offset << "($fp)";
+	}
+	else if (symbol_scope == formal)
+	{
+		int offset = aux_offset_from_sp;
+		file_buffer << offset  << "($sp)";
 	}
 	else
 		file_buffer << symbol_entry->get_variable_name();
@@ -452,8 +465,13 @@ void Control_Flow_IC_Stmt::print_assembly(ostream & file_buffer)
 			file_buffer << ", " << offset << " \n";
 			break; 
 
-	default: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Intermediate code format not supported");
-		break;
+		case a_op:
+			// file_buffer << "\t" << op_name << " \n";
+			break;
+
+		default: 
+			CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Intermediate code format not supported");
+			break;
 	}
 }
 

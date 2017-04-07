@@ -15,6 +15,7 @@ class Procedure;
 
 class Procedure
 {
+public:
 	Data_Type return_type;
 	string name;
 	Symbol_Table local_symbol_table;
@@ -22,13 +23,12 @@ class Procedure
 
 	int lineno;
 
-public:
 	Procedure(Data_Type proc_return_type, string proc_name, int line);
 	~Procedure();
 
 	string get_proc_name();
 	void set_sequence_ast(Sequence_Ast & sa);
-	void set_local_list(Symbol_Table & new_list);
+	void set_local_list(Symbol_Table * new_list);
 	Data_Type get_return_type();
 	Symbol_Table_Entry & get_symbol_table_entry(string variable_name);
 	Symbol_Table_Entry & get_formal_by_index(int n);

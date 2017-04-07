@@ -353,6 +353,7 @@ public:
 	void set_return_ast(Ast * temp_return);
 	Ast * get_return_ast();
 	~Return_Ast();
+	Data_Type get_data_type();
 	void print(ostream & file_buffer);
 	Code_For_Ast & compile();
 	void print_assembly(ostream & file_buffer);
@@ -365,6 +366,7 @@ class Func_Call_Ast: public Ast{
 public:
 	Func_Call_Ast(Procedure * _proc, list<Ast*> * _args);
 	~Func_Call_Ast();
+	int get_size_of_value_type(Data_Type dt);
 	void print(ostream & file_buffer);
 	Code_For_Ast & compile();
 	void print_assembly(ostream & file_buffer);

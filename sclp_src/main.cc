@@ -54,6 +54,8 @@ int main(int argc, char * argv[])
 		#endif
 		}
 
+		program_object.print_assembly();
+
 		program_object.delete_all();
 	}
 

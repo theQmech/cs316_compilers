@@ -107,6 +107,12 @@ declaration_list:
         CHECK_INVARIANT($2->variable_in_symbol_list_check("main"),
             "Procedure main is not defined");
 
+        list<Symbol_Table_Entry *> list_global_vars = $1->get_table();
+        for (list<Symbol_Table_Entry *>::iterator it = list_global_vars.begin(); 
+            it!=list_global_vars.end(); ++it){
+            (*it)->set_symbol_scope(global);
+        }
+
         global_table->append_proc_decls($2);
 
         program_object.set_global_table(*global_table);
@@ -123,6 +129,12 @@ declaration_list:
         CHECK_INVARIANT((global_table != NULL), "Global declarations cannot be null");
         CHECK_INVARIANT($1->variable_in_symbol_list_check("main"),
             "Procedure main is not defined");
+
+        list<Symbol_Table_Entry *> list_global_vars = $2->get_table();
+        for (list<Symbol_Table_Entry *>::iterator it = list_global_vars.begin(); 
+            it!=list_global_vars.end(); ++it){
+            (*it)->set_symbol_scope(global);
+        }
 
         global_table->append_proc_decls($1);
 
@@ -152,12 +164,14 @@ procedure_declaration:
     {
     if (NOT_ONLY_PARSE)
     {
+
         CHECK_INVARIANT(($2 != NULL), "Procedure name cannot be null");
         CHECK_INPUT(!($4->variable_in_symbol_list_check(*$2)), 
             "Procedure name cannot be same as formal parameter name", get_line_number());
         $$ = new Symbol_Table_Entry(*$2, func_data_type, get_line_number());
+        $$->set_symbol_scope(global);
         Procedure * proc = new Procedure(void_data_type, *$2, get_line_number());
-        proc->set_local_list(*$4);
+        proc->set_local_list($4);
         program_object.insert_proc_in_map(proc);
         $$->set_proc(proc);
     }
@@ -171,8 +185,9 @@ procedure_declaration:
         CHECK_INPUT(!($4->variable_in_symbol_list_check(*$2)), 
             "Procedure name cannot be same as formal parameter name", get_line_number());
         $$ = new Symbol_Table_Entry(*$2, func_data_type, get_line_number());
+        $$->set_symbol_scope(global);
         Procedure * proc = new Procedure(int_data_type, *$2, get_line_number());
-        proc->set_local_list(*$4);
+        proc->set_local_list($4);
         program_object.insert_proc_in_map(proc);
         $$->set_proc(proc);
     }
@@ -186,8 +201,9 @@ procedure_declaration:
         CHECK_INPUT(!($4->variable_in_symbol_list_check(*$2)), 
             "Procedure name cannot be same as formal parameter name", get_line_number());
         $$ = new Symbol_Table_Entry(*$2, func_data_type, get_line_number());
+        $$->set_symbol_scope(global);
         Procedure * proc = new Procedure(double_data_type, *$2, get_line_number());
-        proc->set_local_list(*$4);
+        proc->set_local_list($4);
         program_object.insert_proc_in_map(proc);
         $$->set_proc(proc);
     }
@@ -202,16 +218,16 @@ parameter_list:
 parameter
 {
     $$ = new Symbol_Table();
-    CHECK_INPUT($$->variable_in_symbol_list_check($1->get_variable_name()),
-        "Formal Parameter declared twice", get_line_number());
+    $1->set_symbol_scope(formal);
     $$->push_symbol($1);
 }
 |
 parameter_list ',' parameter
 {
     $$ = $1;
-    CHECK_INPUT($$->variable_in_symbol_list_check($3->get_variable_name()),
+    CHECK_INPUT(!($$->variable_in_symbol_list_check($3->get_variable_name())),
         "Formal Parameter declared twice", get_line_number());
+    $3->set_symbol_scope(formal);
     $$->push_symbol($3);
 }
 ;
@@ -223,7 +239,8 @@ INTEGER NAME
     $$->set_symbol_scope(formal);
 }
 |
-FLOAT NAME{
+FLOAT NAME
+{
     $$ = new Symbol_Table_Entry(*$2, double_data_type, get_line_number());
     $$->set_symbol_scope(formal);
 }
@@ -276,9 +293,9 @@ procedure_definition:
             it!=local_table_list.end(); ++it){
             CHECK_INPUT(!(current_procedure->variable_in_symbol_list_check((*it)->get_variable_name())),
                 "Formal parameter and local variable name cannot be same", get_line_number());
+            (*it)->set_symbol_scope(local);
             current_procedure->push_symbol(*it);
         }
-        // current_procedure->set_local_list(*local_table);
     }
     }
 
@@ -292,6 +309,9 @@ procedure_definition:
         CHECK_INVARIANT((current_procedure != NULL), "Current procedure cannot be null");
         CHECK_INVARIANT((seq != NULL), "statement list cannot be null");
         CHECK_INVARIANT((ret != NULL), "return statement cannot be null");
+
+        CHECK_INPUT(current_procedure->get_return_type()==ret->get_data_type(),
+            "More than one return type not allowed\n", get_line_number());
 
         seq->ast_push_back(ret);
         current_procedure->set_sequence_ast(*seq);
@@ -336,8 +356,7 @@ variable_declaration_list:
             CHECK_INVARIANT((decl_stmt != NULL), "Non-terminal declaration statement cannot be null");
 
             string decl_name = decl_stmt->get_variable_name();
-            CHECK_INPUT ((program_object.variable_proc_name_check(decl_name) == true),
-                "Variable name cannot be same as the procedure name", get_line_number());
+
             if(current_procedure != NULL)
             {
                 CHECK_INPUT((current_procedure->get_proc_name() != decl_name),

@@ -70,7 +70,6 @@ Code_For_Ast & Assignment_Ast::compile()
 	return *assign_stmt;
 }
 
-
 /////////////////////////////////////////////////////////////////
 
 Code_For_Ast & Name_Ast::compile()
@@ -792,7 +791,12 @@ Code_For_Ast & Return_Ast::compile(){
 		Ics_Opd * ret_reg_opd = new Register_Addr_Opd(reg);
 		// DOUBT: How to get a specific fn_result register
 
-		Register_Descriptor *v1_reg = machine_desc_object.get_new_register<fn_result>();
+		Register_Descriptor *v1_reg;
+		if (node_data_type == int_data_type)
+			v1_reg = new Register_Descriptor(v1, "v1", int_num, fn_result);
+		else if (node_data_type == double_data_type)
+			v1_reg = new Register_Descriptor(f0, "f0", float_num, fn_result);
+
 		Ics_Opd * v1 = new Register_Addr_Opd(v1_reg);
 
 		Icode_Stmt * ic_stmt;
@@ -822,8 +826,70 @@ void Return_Ast::print_icode(ostream & file_buffer){
 //////////////////////////////////////////////////////////////////////////////
 
 Code_For_Ast & Func_Call_Ast::compile(){
-	printf("Func_Call_Ast::compile not defined\n");
+	list<Icode_Stmt *> * ic_list = new list<Icode_Stmt*>();
+
+	int idx_param = 0;
+	int off_sz = 0;
+	int total_sz = 0;
+
+	for(list<Ast*>::iterator it = args->begin(); it!=args->end(); ++it, ++idx_param){
+		total_sz += get_size_of_value_type(proc->get_formal_by_index(idx_param).get_data_type());
+	}
+
+	off_sz = -total_sz;
+	idx_param = 0;
+
+	for(list<Ast*>::iterator it = args->begin(); it!=args->end(); ++it, ++idx_param){
+		Code_For_Ast & arg_stmt = (*it)->compile();
+
+		Register_Descriptor * reg = arg_stmt.get_reg();
+		Ics_Opd * arg_value = new Register_Addr_Opd(reg);
+		off_sz += get_size_of_value_type(proc->get_formal_by_index(idx_param).get_data_type());
+		Ics_Opd * result_opd = new Mem_Addr_Opd(proc->get_formal_by_index(idx_param), off_sz);
+
+		Icode_Stmt * new_ic;
+		if ((*it)->get_data_type() == int_data_type)
+			new_ic = new Move_IC_Stmt(Tgt_Op::store, arg_value, result_opd);
+		else
+			new_ic = new Move_IC_Stmt(Tgt_Op::store_d, arg_value, result_opd);
+
+		ic_list->push_front(new_ic);
+		ic_list->splice(ic_list->begin(), arg_stmt.get_icode_list());
+	}
+		// new_ic = new Compute_IC_Stmt(Tgt_Op::sle, lhs_opd, rhs_opd, result_opd);
+	Icode_Stmt * sub_ic = new Compute_IC_Stmt(Tgt_Op::sub, 
+		new Register_Addr_Opd(new Register_Descriptor(sp, "sp", int_num, pointer)),
+		new Const_Opd<int>(total_sz),
+		new Register_Addr_Opd(new Register_Descriptor(sp, "sp", int_num, pointer)));
+	ic_list->push_back(sub_ic);
+	Icode_Stmt * new_ic = new Control_Flow_IC_Stmt(Tgt_Op::jal, NULL, NULL, proc->get_proc_name());
+	ic_list->push_back(new_ic);
+	Icode_Stmt * add_ic = new Compute_IC_Stmt(Tgt_Op::add, 
+		new Register_Addr_Opd(new Register_Descriptor(sp, "sp", int_num, pointer)),
+		new Const_Opd<int>(total_sz),
+		new Register_Addr_Opd(new Register_Descriptor(sp, "sp", int_num, pointer)));
+	ic_list->push_back(add_ic);
+
+	Code_For_Ast * ret_val = new Code_For_Ast(*ic_list, NULL);
+	return *ret_val;
+
+	// printf("Func_Call_Ast::compile not defined\n");
 }
+
+int Func_Call_Ast::get_size_of_value_type(Data_Type dt)
+{
+	switch(dt)
+	{
+	case int_data_type: return 4; break;
+	case double_data_type: return 8; break;
+	case void_data_type: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Attempt to seek size of type void");
+	default: 
+		// int *a = (NULL);
+		// cout<<*a;
+		CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Data type not supperted");
+	}
+}
+
 
 void Func_Call_Ast::print_assembly(ostream & file_buffer){
 	printf("Func_Call_Ast::print_assembly not defined\n");

@@ -55,8 +55,10 @@ bool Program::variable_proc_name_check(string symbol){
 	list<Symbol_Table_Entry *> global_list = global_symbol_table.get_table();
 	for (list<Symbol_Table_Entry *>::iterator it = global_list.begin();
 		it!=global_list.end(); ++it){
-		if((*it)->get_data_type()==func_data_type && (*it)->get_proc()!=NULL)
-			return true;
+		if((*it)->get_data_type()==func_data_type && (*it)->get_proc()!=NULL){
+			if ((*it)->get_variable_name() == symbol)
+				return true;
+		}
 	}
 	return false;
 }
@@ -70,21 +72,11 @@ bool Program::variable_in_symbol_list_check(string variable){
 }
 
 void Program::global_list_in_proc_check(){
-	printf("Program::global_list_in_proc_check not defined yet\n");
+	// printf("Program::global_list_in_proc_check not defined yet\n");
 }
 
 Procedure * Program::get_proc(string name){
 	if (proc_map.find(name)!=proc_map.end())
 		return proc_map[name];
 	CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Program::get_proc() proc must exist\n");
-}
-
-// compile
-void Program::compile(){
-	procedure->compile();
-	printf("Program::compile not defined yet\n");
-}
-
-void Program::print_assembly(){
-	printf("Program::print_assembly not defined yet\n");
 }

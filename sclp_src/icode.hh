@@ -157,9 +157,11 @@ public:
 class Mem_Addr_Opd:public Ics_Opd
 {
 	Symbol_Table_Entry * symbol_entry;
+	int aux_offset_from_sp;
 
 public:
 	Mem_Addr_Opd(Symbol_Table_Entry & se);
+	Mem_Addr_Opd(Symbol_Table_Entry & se, int off_from_caller_sp);
 	~Mem_Addr_Opd() {}
 
 	void print_ics_opd(ostream & file_buffer);

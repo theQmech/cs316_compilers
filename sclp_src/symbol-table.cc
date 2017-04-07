@@ -67,6 +67,27 @@ bool Symbol_Table::is_empty()
 	return variable_table.empty();
 }
 
+
+void Symbol_Table::copyfrom(Symbol_Table * new_table){
+	list<Symbol_Table_Entry *> my_list = new_table->get_table();
+	for(list<Symbol_Table_Entry *>::iterator it = my_list.begin();
+		it!=my_list.end(); ++it){
+		push_symbol(*it);
+	}
+	scope = new_table->scope;
+	size_in_bytes = new_table->size_in_bytes;
+	start_offset_of_first_symbol = new_table->start_offset_of_first_symbol;
+
+	cout<<"inside copyfrom1"<<endl;
+	print_debug();
+	cout<<endl;
+
+	cout<<"inside copyfrom2"<<endl;
+	new_table->print_debug();
+	cout<<endl;
+
+}
+
 void Symbol_Table::push_symbol(Symbol_Table_Entry * variable)
 {
 	variable_table.push_back(variable);
@@ -82,6 +103,14 @@ void Symbol_Table::append_proc_decls(Symbol_Table * procs_table)
 	delete procs_table;
 }
 
+void Symbol_Table::print_debug(){
+	cout<<"Table start"<<endl;
+	for(list<Symbol_Table_Entry *>::iterator it = variable_table.begin();
+		it!=variable_table.end(); ++it){
+		cout<<"\t"<<(*it)->get_variable_name()<<" "<<(*it)->get_data_type()<<" "<<(*it)->get_symbol_scope()<<endl;
+	}
+	cout<<"Table end"<<endl;
+}
 
 list<Symbol_Table_Entry *> & Symbol_Table::get_table()
 {
@@ -100,7 +129,6 @@ void Symbol_Table::global_list_in_proc_map_check()
 
 bool Symbol_Table::variable_in_symbol_list_check(string variable)
 {
-	// cout<<"here "<<variable_table.size()<<endl;
 	list<Symbol_Table_Entry *>::iterator i;
 	for (i = variable_table.begin(); i != variable_table.end(); i++)
 	{
@@ -131,7 +159,6 @@ Symbol_Table_Entry & Symbol_Table::get_symbol_table_entry(string variable_name)
 		if ((*i)->get_variable_name() == variable_name)
 			return **i;
 	}
-
 	CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "The variable symbol entry doesn't exist");
 }
 

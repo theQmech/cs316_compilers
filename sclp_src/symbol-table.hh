@@ -72,6 +72,8 @@ public:
 
 	void print(ostream & file_buffer);
 
+	void copyfrom(Symbol_Table * new_table);
+
 	void push_symbol(Symbol_Table_Entry * variable);
 
 	// DONT DO THIS:
@@ -89,8 +91,9 @@ public:
 	Symbol_Table_Entry & get_symbol_table_entry(string variable_name);
 	void global_list_in_proc_map_check();
 
-	list<Symbol_Table_Entry *> & get_table();
+	void print_debug();
 
+	list<Symbol_Table_Entry *> & get_table();
 
 	// compile
 private:

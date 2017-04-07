@@ -198,7 +198,7 @@ void Machine_Description::initialize_instruction_table()
 	spim_instruction_table[Tgt_Op::jal] = new Instruction_Descriptor(Tgt_Op::jal, "jal", "jal", "", i_op_st, a_op_st);
 	spim_instruction_table[Tgt_Op::syscall] = new Instruction_Descriptor(Tgt_Op::syscall, "syscall", "syscall", "", i_op_st, a_op_st);
 	spim_instruction_table[Tgt_Op::label] = new Instruction_Descriptor(Tgt_Op::label, "", "", "", i_op_st, a_op_st);
-	spim_instruction_table[Tgt_Op::ret_inst] = new Instruction_Descriptor(Tgt_Op::ret_inst, "return", "", "", i_op, a_op);
+	spim_instruction_table[Tgt_Op::ret_inst] = new Instruction_Descriptor(Tgt_Op::ret_inst, "return", "jr $31", "", i_op, a_op);
 	spim_instruction_table[Tgt_Op::seq_d] = new Instruction_Descriptor(Tgt_Op::seq_d, "seq.d", "c.eq.d", "", i_o1_op_o2, a_op_o1_o2);
 	spim_instruction_table[Tgt_Op::slt_d] = new Instruction_Descriptor(Tgt_Op::slt_d, "slt.d", "c.lt.d", "", i_o1_op_o2, a_op_o1_o2);
 	spim_instruction_table[Tgt_Op::sle_d] = new Instruction_Descriptor(Tgt_Op::sle_d, "sle.d", "c.le.d", "", i_o1_op_o2, a_op_o1_o2);

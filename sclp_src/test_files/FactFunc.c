@@ -1,5 +1,6 @@
+int temp_global;
 void nonrecurfn(int n);
-void recurfn(int number);
+void recurfn(int number, int k);
 int recurfactorial(int n);
 int nonrecurfactorial(int n);
 void main(); 
@@ -15,13 +16,14 @@ main()
   print(fact);
 
   nonrecurfn(number); 
-  recurfn(number);
+  recurfn(number+1, 0);
   return;
 }
 
-recurfn(int number)
+recurfn(int number, int k)
 {
   int fact;
+  temp_global = 10;
   fact = recurfactorial(number);
   return;
 }
@@ -47,7 +49,7 @@ nonrecurfactorial(int n)
   int c;
   int result;
   result = 1;
-  c = 1;
+  c = 2;
   while ( c <= n){
     result = result * c;
     c = c+1;

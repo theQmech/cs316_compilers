@@ -15,7 +15,7 @@ Procedure::Procedure(Data_Type proc_return_type, string proc_name, int line){
 }
 
 Procedure::~Procedure(){
-	printf("Procedure::~Procedure not defined\n");
+	// printf("Procedure::~Procedure not defined\n");
 }
 
 string Procedure::get_proc_name(){
@@ -26,9 +26,10 @@ void Procedure::set_sequence_ast(Sequence_Ast & sa){
 	sequence_ast = &sa;
 }
 
-void Procedure::set_local_list(Symbol_Table & new_list){
-	local_symbol_table = new_list;
-	local_symbol_table.set_table_scope(local);
+void Procedure::set_local_list(Symbol_Table * new_list){
+	local_symbol_table = *new_list;
+	// local_symbol_table.copyfrom(new_list);
+	// local_symbol_table.set_table_scope(local);
 }
 
 Data_Type Procedure::get_return_type(){
@@ -56,6 +57,23 @@ Symbol_Table_Entry & Procedure::get_formal_by_index(int n){
 		"Symbol_Table::get_formal_by_index() out of reach");
 }
 
+// Symbol_Table_Entry & Procedure::get_formal_by_index_from_end(int n){
+// 	list<Symbol_Table_Entry *> entries = local_symbol_table.get_table();
+// 	list<Symbol_Table_Entry *>::iterator it = entries.begin();
+// 	int idx = 0;
+// 	while(it!=entries.end()){
+// 		if ((*it)->get_symbol_scope() == formal){
+// 			if (idx==n)
+// 				return **it;
+// 			else
+// 				++idx;
+// 		}
+// 		++it;
+// 	}
+// 	CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, 
+// 		"Symbol_Table::get_formal_by_index() out of reach");
+// }
+
 bool Procedure::match_prototype(Symbol_Table &new_sym_table){
 	(local_symbol_table==new_sym_table);
 	return true;
@@ -81,23 +99,23 @@ bool Procedure::variable_in_symbol_list_check(string variable){
 	return local_symbol_table.variable_in_symbol_list_check(variable);
 }
 
-// compile
-void Procedure::compile(){
-	printf("Procedure::compile not defined\n");
-}
+// // compile
+// void Procedure::compile(){
+// 	printf("Procedure::compile not defined\n");
+// }
 
-void Procedure::print_icode(ostream & file_buffer){
-	printf("Procedure::print_icode not defined\n");
-}
+// void Procedure::print_icode(ostream & file_buffer){
+// 	printf("Procedure::print_icode not defined\n");
+// }
 
-void Procedure::print_assembly(ostream & file_buffer){
-	printf("Procedure::print_assembly not defined\n");
-}
+// void Procedure::print_assembly(ostream & file_buffer){
+// 	printf("Procedure::print_assembly not defined\n");
+// }
 
-void Procedure::print_prologue(ostream & file_buffer){
-	printf("Procedure::print_prologue not defined\n");
-}
+// void Procedure::print_prologue(ostream & file_buffer){
+// 	printf("Procedure::print_prologue not defined\n");
+// }
 
-void Procedure::print_epilogue(ostream & file_buffer){
-	printf("Procedure::print_epilogue not defined\n");
-}
+// void Procedure::print_epilogue(ostream & file_buffer){
+// 	printf("Procedure::print_epilogue not defined\n");
+// }
