@@ -854,7 +854,7 @@ Code_For_Ast & Sequence_Ast::compile()
 	// bool flag = (optimize_flag==0);
 	// ++optimize_flag;
 
-	// machine_desc_object.clear_local_register_mappings();
+	machine_desc_object.clear_local_register_mappings();
 	for(list<Ast *>::iterator it=statement_list.begin();
 			it!=statement_list.end(); ++it){
 		Code_For_Ast curr = (*it)->compile();
