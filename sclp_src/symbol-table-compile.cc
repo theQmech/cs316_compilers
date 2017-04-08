@@ -29,7 +29,7 @@ int Symbol_Table::get_size()
 	return size_in_bytes;
 }
 
-// void Symbol_Table::assign_offsets()
+ // void Symbol_Table::assign_offsets()
 // {
 // 	size_in_bytes = start_offset_of_first_symbol;
 // 	int offset;

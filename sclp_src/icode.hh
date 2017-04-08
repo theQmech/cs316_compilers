@@ -158,6 +158,7 @@ class Mem_Addr_Opd:public Ics_Opd
 {
 	Symbol_Table_Entry * symbol_entry;
 	int aux_offset_from_sp;
+	bool is_argument;
 
 public:
 	Mem_Addr_Opd(Symbol_Table_Entry & se);

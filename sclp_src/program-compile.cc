@@ -31,6 +31,7 @@ void Program::compile(){
 }
 
 void Program::print_assembly(){
+	command_options.create_output_buffer();
 	ostream & file_buffer = command_options.get_output_buffer();
 
 	file_buffer<<"\n\t.data"<<endl;

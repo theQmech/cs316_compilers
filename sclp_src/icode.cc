@@ -29,6 +29,7 @@ Mem_Addr_Opd::Mem_Addr_Opd(Symbol_Table_Entry & se)
 {
 	//TODO
 	symbol_entry = &se;
+	is_argument = false;
 }
 
 Mem_Addr_Opd::Mem_Addr_Opd(Symbol_Table_Entry & se, int off_from_caller_sp) 
@@ -36,6 +37,7 @@ Mem_Addr_Opd::Mem_Addr_Opd(Symbol_Table_Entry & se, int off_from_caller_sp)
 	//TODO
 	symbol_entry = &se;
 	aux_offset_from_sp = off_from_caller_sp;
+	is_argument = true;
 }
 
 
@@ -60,6 +62,10 @@ void Mem_Addr_Opd::print_asm_opd(ostream & file_buffer)
 
 	if (symbol_scope == local)
 	{
+		int offset = symbol_entry->get_start_offset();
+		file_buffer << offset << "($fp)";
+	}
+	else if (symbol_scope == formal && !is_argument){
 		int offset = symbol_entry->get_start_offset();
 		file_buffer << offset << "($fp)";
 	}
