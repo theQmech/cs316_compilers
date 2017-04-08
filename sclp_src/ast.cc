@@ -16,6 +16,7 @@ Ast::Ast()
 {}
 
 int Ast::labelCounter=0;
+int Ast::stringLabelCounter=0;
 int Ast::optimize_flag=0;
 
 Ast::~Ast()
@@ -402,6 +403,28 @@ void UMinus_Ast::print(ostream & file_buffer)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+Arith_Func_Call::Arith_Func_Call(Ast * l, Ast * r, int line)
+{
+	//ADD CODE HERE
+	lhs = l;
+	rhs = r;
+	ast_num_child = unary_arity;
+	node_data_type = l->get_data_type();
+	lineno = line;
+}
+
+void Arith_Func_Call::print(ostream & file_buffer)
+{
+	//ADD CODE HERE
+	file_buffer <<"\n" << AST_NODE_SPACE << "Arith: UMINUS\n";
+
+	file_buffer << AST_SUB_NODE_SPACE"LHS (";
+	lhs->print(file_buffer);
+	file_buffer << ")";
+}
+
+//////////////////////////////////////////////////////////////////////
+
 Relational_Expr_Ast::Relational_Expr_Ast(Ast * lhs, Relational_Op rop, Ast * rhs, int line):
 lhs_condition(lhs),rhs_condition(rhs),rel_op(rop){
 	lineno = line;
@@ -621,13 +644,11 @@ void Selection_Statement_Ast::print(ostream & file_buffer){
 
 /////////////////////////////////////////////////////////////////////
 
-Sequence_Ast::Sequence_Ast(int line)
-{
+Sequence_Ast::Sequence_Ast(int line){
 	lineno = line;
 }
 
-Sequence_Ast::~Sequence_Ast()
-{
+Sequence_Ast::~Sequence_Ast(){
 }
 
 void Sequence_Ast::ast_push_back(Ast * ast){
@@ -680,10 +701,17 @@ void Return_Ast::print(ostream & file_buffer){
 
 /////////////////////////////////////////////////////////////////////
 
-Func_Call_Ast::Func_Call_Ast(Procedure * _proc, list<Ast*> * _args){
+Func_Call_Ast::Func_Call_Ast(Procedure * _proc, list<Ast*> * _args, int line){
 	proc = _proc;
 	args = _args;
+	lineno = line;
+	node_data_type = proc->get_return_type();
 }
+
+Data_Type Func_Call_Ast::get_data_type(){
+	return node_data_type;
+}
+
 
 Func_Call_Ast::~Func_Call_Ast(){
 
@@ -695,6 +723,36 @@ void Func_Call_Ast::print(ostream & file_buffer){
 
 /////////////////////////////////////////////////////////////////////
 
+Print_Ast::Print_Ast(Ast * _expr, int line){
+	expr = _expr;
+	lineno = line;
+}
+
+Print_Ast::~Print_Ast(){}
+void Print_Ast::print(ostream & file_buffer){
+	printf("Func_Call_Ast::print not defined\n");
+}
+/////////////////////////////////////////////////////////////////////
+
+String_Ast::String_Ast(string stringvalue, int line){
+	mystring = stringvalue;
+	lineno = line;
+	node_data_type = string_data_type;
+}
+String_Ast::~String_Ast(){}
+
+bool String_Ast::is_empty(){
+	return (mystring== "");
+}
+
+Data_Type String_Ast::get_data_type(){
+	return node_data_type;
+}
+
+void String_Ast::print(ostream & file_buffer){
+	printf("Func_Call_Ast::print not defined\n");
+}
+/////////////////////////////////////////////////////////////////////
 
 template class Number_Ast<double>;
 template class Number_Ast<int>;

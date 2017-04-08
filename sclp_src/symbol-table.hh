@@ -124,8 +124,9 @@ class Symbol_Table_Entry
 	int end_offset;
 	Register_Descriptor * register_description;
 	Offset_With_Ref_To ref_off;
-
 public:
+	string global_string;
+
 	Symbol_Table_Entry();
 	Symbol_Table_Entry(string & name, Data_Type new_data_type, int line, Offset_With_Ref_To ro = fp_ref);
 	~Symbol_Table_Entry();

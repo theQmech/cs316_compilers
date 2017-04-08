@@ -31,7 +31,6 @@ void Program::compile(){
 }
 
 void Program::print_assembly(){
-
 	ostream & file_buffer = command_options.get_output_buffer();
 
 	file_buffer<<"\n\t.data"<<endl;
@@ -42,6 +41,8 @@ void Program::print_assembly(){
 			file_buffer<<(*it)->get_variable_name()<<":\t.word 0\n";
 		if((*it)->get_data_type()==double_data_type)
 			file_buffer<<(*it)->get_variable_name()<<":\t.space 8\n";
+		if((*it)->get_data_type()==string_data_type)
+			file_buffer<<(*it)->get_variable_name()<<":\t .asciiz \t"<<(*it)->global_string<<"\n";
 	}
 
 	for (map<string, Procedure *>::iterator it = proc_map.begin();

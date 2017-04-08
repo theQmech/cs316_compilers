@@ -92,11 +92,17 @@ protected:
 	Data_Type node_data_type;
 	Ast_Arity ast_num_child;
 	static int labelCounter;
+	static int stringLabelCounter;
 	static int optimize_flag;
 	int lineno;
 	string get_new_label(){
 
 		return "label"+to_string(labelCounter++);
+	}
+
+	string get_new_string_label(){
+
+		return "string"+to_string(stringLabelCounter++);
 	}
 
 public:
@@ -332,6 +338,18 @@ public:
 	Code_For_Ast & compile();
 };
 
+class Arith_Func_Call: public Arithmetic_Expr_Ast
+{
+public:
+	Arith_Func_Call(Ast * l, Ast * r, int line);
+	~Arith_Func_Call();
+	
+	void print(ostream & file_buffer);
+
+	Code_For_Ast & compile();
+};
+
+
 class Sequence_Ast: public Ast{
 	list<Ast *> statement_list;
 	list<Icode_Stmt *> sa_icode_list;
@@ -364,13 +382,43 @@ class Func_Call_Ast: public Ast{
 	Procedure * proc;
 	list<Ast *> * args;
 public:
-	Func_Call_Ast(Procedure * _proc, list<Ast*> * _args);
+	Func_Call_Ast(Procedure * _proc, list<Ast*> * _args,int line);
 	~Func_Call_Ast();
 	int get_size_of_value_type(Data_Type dt);
+	Data_Type get_data_type();
 	void print(ostream & file_buffer);
 	Code_For_Ast & compile();
 	void print_assembly(ostream & file_buffer);
 	void print_icode(ostream & file_buffer);
 };
+
+class Print_Ast: public Ast{
+	Ast * expr;
+public:
+	Print_Ast(Ast * _expr, int line);
+	~Print_Ast();
+	void print(ostream & file_buffer);
+	Code_For_Ast & compile();
+	void print_assembly(ostream & file_buffer);
+	void print_icode(ostream & file_buffer);
+};
+
+class String_Ast:public Ast
+{
+public:
+	string mystring;
+	string mylabel;
+	String_Ast(string stringvalue, int line);
+	~String_Ast();
+
+	bool is_empty();
+	Data_Type get_data_type();
+
+	void print(ostream & file_buffer);
+	void print_assembly(ostream & file_buffer);
+	void print_icode(ostream & file_buffer);
+	Code_For_Ast & compile();
+};
+
 
 #endif

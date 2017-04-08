@@ -329,6 +329,32 @@ public:
 	void print_assembly(ostream & file_buffer);
 };
 
+class String_IC_Stmt: public Icode_Stmt
+{
+	string mystring;
+	string label;
+public:
+	String_IC_Stmt(string _label, string _mystring);
+	~String_IC_Stmt();
+	
+	string get_string();
+	string get_label();
+
+	void print_icode(ostream & file_buffer);
+	void print_assembly(ostream & file_buffer);
+};
+
+class Syscall_IC_Stmt: public Icode_Stmt
+{
+	public:
+	Syscall_IC_Stmt();
+	~Syscall_IC_Stmt();
+	
+	void print_icode(ostream & file_buffer);
+	void print_assembly(ostream & file_buffer);
+
+};
+
 //////////////////////// Intermediate code for Ast statements ////////////////////////
 
 class Code_For_Ast

@@ -1,0 +1,2 @@
+g++ --std=c++0x -DCOMPILE -g -c icode.cc
+Makefile:26: recipe for target 'icode.o' failed

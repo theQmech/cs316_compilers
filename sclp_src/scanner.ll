@@ -21,6 +21,7 @@ do      { store_token_name("DO"); return Parser::DO; }
 if      { store_token_name("IF"); return Parser::IF; }
 else    { store_token_name("ELSE"); return Parser::ELSE; }
 return  { store_token_name("RETURN"); return Parser::RETURN; }
+print   { store_token_name("PRINT"); return Parser::PRINT; }
 
 "="     { store_token_name("ASSIGN_OP"); return Parser::ASSIGN; }
 "?"     { store_token_name("QMARK"); return Parser::QMARK; }
@@ -39,6 +40,13 @@ return  { store_token_name("RETURN"); return Parser::RETURN; }
 "!"     { store_token_name("NOT"); return Parser::NOT; }
 
 {meta}  { store_token_name("META CHAR"); return matched()[0]; }
+
+(["]([^"])*["])    {
+    store_token_name("STRING");
+    ParserBase::STYPE__ *val = getSval();
+    val->string_value = new std::string(matched());
+    return Parser::STRING;
+}
 
 {digit}+  {
     store_token_name("NUM");

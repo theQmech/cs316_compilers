@@ -19,6 +19,8 @@
     Func_Call_Ast * func_call_ast;
     list<Ast *> * list_ast;
     Return_Ast * return_ast;
+    Print_Ast * print_ast;
+    String_Ast * string_ast;
     list<string> * list_string;
     pair<Data_Type, list<string>*> * new_decl;
 };
@@ -26,8 +28,9 @@
 //ADD TOKENS HEREs
 %token <int_value> INTEGER_NUMBER
 %token <float_value> DOUBLE_NUMBER
+%token <string_value> STRING
 %token <string_value> NAME
-%token VOID INTEGER FLOAT ASSIGN WHILE IF DO
+%token VOID INTEGER FLOAT ASSIGN WHILE IF DO PRINT
 // %token FOR GOTO SWITCH 
 // %token COLON QMARK
 // %token LT LTE GT GTE EQ NEQ AND OR NOT
@@ -64,6 +67,8 @@
 %type <ast> block
 %type <sequence_ast> statement_list
 %type <return_ast> return_stmt
+%type <print_ast> print_stmt
+%type <ast> print_argument
 %type <list_string> variable_list
 %type <list_ast> arguments
 %type <func_call_ast> func_call
@@ -508,7 +513,7 @@ statement_list:
     }
     }
 |
-    statement_list func_call
+    statement_list func_call ';'
     {
     if (NOT_ONLY_PARSE)
     {
@@ -529,10 +534,35 @@ statement_list:
         $1->ast_push_back($2);
         $$ = $1;
     }
+|
+    statement_list print_stmt
+    {
+        $1->ast_push_back($2);
+        $$ = $1;
+    }
+;
+print_stmt:
+    PRINT '(' print_argument ')' ';'
+    {
+        $$ = new Print_Ast( $3, get_line_number());
+    }
 ;
 
+print_argument:
+    arith_expression
+    {
+    if (NOT_ONLY_PARSE){
+        $$ = $1;
+    }
+    }
+|
+    STRING
+    {
+        $$ = new String_Ast(*$1, get_line_number());
+    }
+;
 func_call:
-    NAME '(' arguments ')' ';'
+    NAME '(' arguments ')'
 {
     CHECK_INVARIANT($3!=NULL, "func_call arguments cannot be NULL")
     string func_name = *$1;
@@ -548,7 +578,7 @@ func_call:
         CHECK_INPUT((*it)->get_data_type()==proc->get_formal_by_index(argc).get_data_type(),
             "Actual and formal parameters data types are not matching", get_line_number());
     }
-    $$ = new Func_Call_Ast(proc, args);
+    $$ = new Func_Call_Ast(proc, args, get_line_number());
 }
 ;
 
@@ -704,6 +734,16 @@ arith_expression:
         if (NOT_ONLY_PARSE){
             $$ = new Conditional_Operator_Ast($1, $3, $5, get_line_number());
             $$->check_ast();
+        }
+    }
+|
+    func_call
+    {
+        if (NOT_ONLY_PARSE){
+        // cout<<"####"<<endl;
+            $$ = new Arith_Func_Call($1, NULL, get_line_number());
+            $$->check_ast();
+        // cout<<"####"<<endl;
         }
     }
 ;

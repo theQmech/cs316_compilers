@@ -14,11 +14,11 @@ extern Program program_object;
 
 class Program
 {
+public:
 	Symbol_Table global_symbol_table;
 	Procedure * procedure;
 	map<string, Procedure *> proc_map;
 
-public:
 	Program();
 	~Program();
 	void delete_all();

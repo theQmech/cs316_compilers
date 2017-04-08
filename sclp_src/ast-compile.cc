@@ -737,10 +737,59 @@ Code_For_Ast & UMinus_Ast::compile()
 
 //////////////////////////////////////////////////////////////////////////////
 
+Code_For_Ast & Arith_Func_Call::compile()
+{
+	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
+	machine_desc_object.clear_local_register_mappings();
+
+	Code_For_Ast & lhs_stmt = lhs->compile();
+	Register_Descriptor *v1_reg;
+	if (node_data_type == int_data_type)
+		v1_reg = new Register_Descriptor(v1, "v1", int_num, fn_result);
+	else if (node_data_type == double_data_type)
+		v1_reg = new Register_Descriptor(f0, "f0", float_num, fn_result);
+	Ics_Opd * lhs_opd = new Register_Addr_Opd(v1_reg);
+
+	Ics_Opd * rhs_opd;
+	if (node_data_type == int_data_type)
+		rhs_opd = new Const_Opd<int>(0);
+	else if (node_data_type == double_data_type)
+		rhs_opd = new Const_Opd<double>(0);
+
+
+	Register_Descriptor * reg;
+	if (node_data_type == int_data_type)
+		reg = machine_desc_object.get_new_register<gp_data>();
+	else if (node_data_type == double_data_type)
+		reg = machine_desc_object.get_new_register<float_reg>();
+	Ics_Opd * result_opd = new Register_Addr_Opd(reg);
+
+	list<Icode_Stmt *> & ic_list = *new list<Icode_Stmt *>();
+
+	if (lhs_stmt.get_icode_list().empty() == false)
+		ic_list = lhs_stmt.get_icode_list();
+
+	Icode_Stmt * new_ic;
+	if (node_data_type == int_data_type)
+		new_ic = new Move_IC_Stmt(Tgt_Op::mov, lhs_opd, result_opd);
+	else if (node_data_type == double_data_type)
+		new_ic = new Move_IC_Stmt(Tgt_Op::move_d, lhs_opd, result_opd);
+	if (new_ic)
+		ic_list.push_back(new_ic);
+
+	Code_For_Ast * div_stmt;
+	if (ic_list.empty() == false)
+		div_stmt = new Code_For_Ast(ic_list, reg);
+
+	return *div_stmt;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 Code_For_Ast & Sequence_Ast::compile()
 {
-	bool flag = (optimize_flag==0);
-	++optimize_flag;
+	// bool flag = (optimize_flag==0);
+	// ++optimize_flag;
 
 	machine_desc_object.clear_local_register_mappings();
 	for(list<Ast *>::iterator it=statement_list.begin();
@@ -749,11 +798,13 @@ Code_For_Ast & Sequence_Ast::compile()
 		sa_icode_list.splice(sa_icode_list.end(), curr.get_icode_list());
 	}
 
-	if (flag){
-		CFG * cfg = new CFG(sa_icode_list);
-		// cfg->optimise();
-		sa_icode_list = cfg->toInstructionList();
-	}
+	// if (flag){
+	// 	CFG * cfg = new CFG(sa_icode_list);
+	// 	// cfg->optimise();
+	// 	sa_icode_list = cfg->toInstructionList();
+	// }
+
+	// cout<<"##### Sequence_Ast compiled"<<endl;
 
 	Code_For_Ast *ret_val;
 	ret_val = new Code_For_Ast(sa_icode_list, NULL);
@@ -762,8 +813,10 @@ Code_For_Ast & Sequence_Ast::compile()
 
 void Sequence_Ast::print_assembly(ostream & file_buffer)
 {
+	// cout<<"here "<<sa_icode_list.size()<<endl;
 	for (list<Icode_Stmt *>::iterator it=sa_icode_list.begin();
 			it!=sa_icode_list.end(); ++it){
+		// if ((*it) == NULL)
 		(*it)->print_assembly(file_buffer);
 	}
 }
@@ -789,7 +842,8 @@ Code_For_Ast & Return_Ast::compile(){
 		Code_For_Ast & expr_stmt = return_variable->compile();
 		reg = expr_stmt.get_reg();
 		Ics_Opd * ret_reg_opd = new Register_Addr_Opd(reg);
-		// DOUBT: How to get a specific fn_result register
+
+		icode_list.splice(icode_list.end(), expr_stmt.get_icode_list());
 
 		Register_Descriptor *v1_reg;
 		if (node_data_type == int_data_type)
@@ -801,9 +855,9 @@ Code_For_Ast & Return_Ast::compile(){
 
 		Icode_Stmt * ic_stmt;
 		if (node_data_type == int_data_type)
-			ic_stmt = new Move_IC_Stmt(Tgt_Op::mov, v1, ret_reg_opd);
+			ic_stmt = new Move_IC_Stmt(Tgt_Op::mov, ret_reg_opd, v1);
 		else if (node_data_type == double_data_type)
-			ic_stmt = new Move_IC_Stmt(Tgt_Op::move_d, v1, ret_reg_opd);
+			ic_stmt = new Move_IC_Stmt(Tgt_Op::move_d, ret_reg_opd, v1);
 
 		icode_list.push_back(ic_stmt);
 	}
@@ -899,11 +953,292 @@ void Func_Call_Ast::print_icode(ostream & file_buffer){
 	printf("Func_Call_Ast::print_icode not defined\n");
 }
 
-//////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////
+
+Code_For_Ast & String_Ast::compile(){
+	mylabel = get_new_string_label();
+	Symbol_Table_Entry *new_str_entry = new Symbol_Table_Entry(mylabel, string_data_type, lineno);
+	new_str_entry->global_string = mystring;
+	new_str_entry->set_data_type(string_data_type);
+	new_str_entry->set_symbol_scope(global);
+	program_object.global_symbol_table.push_symbol(new_str_entry);
+
+	String_IC_Stmt * string_stmt= new String_IC_Stmt(mylabel, mystring);
+		list<Icode_Stmt *> * ic_list = new list<Icode_Stmt*>();
+	ic_list->push_back(string_stmt);
+
+	Code_For_Ast * ret_val = new Code_For_Ast(*ic_list, NULL);
+	return *ret_val;
+}
+
+void String_Ast::print_assembly(ostream & file_buffer){
+
+}
+void String_Ast::print_icode(ostream & file_buffer){
+
+}
+/////////////////////////////////////////////////////////////
+Code_For_Ast & Print_Ast::compile(){
+	list<Icode_Stmt *> * ic_list = new list<Icode_Stmt*>();
+	Ics_Opd * expr_val;
+	if (expr == NULL){
+		CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "No argument for print()");
+	}
+	if (expr->get_data_type() != string_data_type){
+		Code_For_Ast & expr_stmt = expr->compile();
+		Register_Descriptor * reg = expr_stmt.get_reg();
+		CHECK_INVARIANT(reg, "Register cannot be null in Print_Ast");
+		expr_val = new Register_Addr_Opd(reg);
+		if (expr_stmt.get_icode_list().empty() == false)
+			ic_list->splice(ic_list->end(), expr_stmt.get_icode_list());
+	}
+	else{
+		Code_For_Ast & expr_stmt = expr->compile();
+	}
+	// Store a0, f12 and v0 previous contents in stack
+	Ics_Opd * sp_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[sp]);
+	Ics_Opd * v0_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[v0]);
+	Ics_Opd * a0_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[a0]);
+	Ics_Opd * f12_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[f12]);
+
+	Const_Opd<int> * constant = new Const_Opd<int>(-4);
+	Compute_IC_Stmt* adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add, sp_opd, constant, sp_opd);
+	ic_list->push_back(adjust_stack);
+
+	string temp11 = "tempvar";
+	Symbol_Table_Entry & se= *new Symbol_Table_Entry(temp11,int_data_type,lineno);
+	se.set_symbol_scope(formal);
+	se.set_start_offset(0);
+	Mem_Addr_Opd* temp_mem_addr= new Mem_Addr_Opd(se, 0);
+	// sw v0 to stack
+	Move_IC_Stmt* store_stmt = new Move_IC_Stmt(Tgt_Op::store, v0_opd, temp_mem_addr);
+	ic_list->push_back(store_stmt);
+
+	// Store a0 to stack
+	ic_list->push_back(adjust_stack);
+	Move_IC_Stmt* store_stmt1 = new Move_IC_Stmt(Tgt_Op::store, a0_opd, temp_mem_addr);
+	ic_list->push_back(store_stmt1);
+
+	// Store f12 to stack
+	Const_Opd<int> * constant1 = new Const_Opd<int>(-8);
+	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd,constant1,sp_opd);
+	ic_list->push_back(adjust_stack);
+
+	Move_IC_Stmt* store_stmt2 = new Move_IC_Stmt(Tgt_Op::store_d, f12_opd, temp_mem_addr);
+	ic_list->push_back(store_stmt2);
+
+
+	Const_Opd<int> * constant3 = new Const_Opd<int>(4);
+	// Store Expression into respective positions and set v0
+	if (expr->get_data_type() == int_data_type){
+		Move_IC_Stmt* move_stmt = new Move_IC_Stmt(Tgt_Op::mov, expr_val,a0_opd);
+		ic_list->push_back(move_stmt);
+
+		Const_Opd<int> * constant2 = new Const_Opd<int>(1);
+		Move_IC_Stmt* li_stmt=new Move_IC_Stmt(Tgt_Op::imm_load,constant2,v0_opd);
+		ic_list->push_back(li_stmt);
+	}
+	else if (expr->get_data_type() == string_data_type){
+		Label_IC_Stmt* load_address= new Label_IC_Stmt(Tgt_Op::la , a0_opd ,((String_Ast*) expr)->mylabel);
+		ic_list->push_back(load_address);
+
+		Move_IC_Stmt* li_stmt=new Move_IC_Stmt(Tgt_Op::imm_load,constant3,v0_opd);
+		ic_list->push_back(li_stmt);
+	}
+	else if (expr->get_data_type() == double_data_type){
+		Move_IC_Stmt* move_stmt = new Move_IC_Stmt(Tgt_Op::move_d, expr_val,f12_opd);
+		ic_list->push_back(move_stmt);
+
+		Const_Opd<int> * constant4 = new Const_Opd<int>(3);
+		Move_IC_Stmt* li_stmt=new Move_IC_Stmt(Tgt_Op::imm_load,constant4,v0_opd);
+		ic_list->push_back(li_stmt);
+	}
+
+	// Add syscall
+	Syscall_IC_Stmt* syscall0 = new Syscall_IC_Stmt();
+	ic_list->push_back(syscall0);
+
+	// Reset
+	Move_IC_Stmt* load_stmt = new Move_IC_Stmt(Tgt_Op::load_d, temp_mem_addr, f12_opd);
+	ic_list->push_back(load_stmt);
+	Const_Opd<int> * constant5 = new Const_Opd<int>(8);
+	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd,constant5, sp_opd);
+	ic_list->push_back(adjust_stack);
+
+ 	load_stmt = new Move_IC_Stmt(Tgt_Op::load, temp_mem_addr,a0_opd);
+	ic_list->push_back(load_stmt);
+	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd, constant3, sp_opd);
+	ic_list->push_back(adjust_stack);
+ 
+ 	load_stmt = new Move_IC_Stmt(Tgt_Op::load, temp_mem_addr,v0_opd);
+	ic_list->push_back(load_stmt);
+	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd, constant3, sp_opd);
+	ic_list->push_back(adjust_stack);
+ 
+	Code_For_Ast * ret_val = new Code_For_Ast(*ic_list, NULL);
+	return *ret_val;	    
+}
+
+void Print_Ast::print_assembly(ostream & file_buffer){
+	printf("Print_Ast::print_assembly not defined\n");
+}
+
+void Print_Ast::print_icode(ostream & file_buffer){
+	printf("Print_Ast::print_icode not defined\n");
+}
+
+//////////////////////////////////////////////////////////////////////////////
 template class Number_Ast<double>;
 template class Number_Ast<int>;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+Code_For_Ast & String_Ast::compile()
+{
+	String_IC_Stmt * string_stmt= new String_IC_Stmt(label, value);
+	list<Icode_Stmt *> & ic_list = *new list<Icode_Stmt *>;
+	ic_list.push_back(string_stmt);
+	
+	Code_For_Ast * string_code;
+	if (ic_list.empty() == false)
+		string_code = new Code_For_Ast(ic_list, NULL);
+ 
+	return *string_code;
+}
+ 
+
+Code_For_Ast & Print_Ast::compile()
+{    
+	list<Icode_Stmt *> & ic_list = *new list<Icode_Stmt *>;
+	Register_Addr_Opd * operand;
+	if(argument->get_data_type() != string_data_type)
+	{
+		Code_For_Ast & stmt = argument->compile();
+		Register_Descriptor * load_register = stmt.get_reg();
+		CHECK_INVARIANT(load_register, "Register cannot be null in Print_Ast");
+		operand = new Register_Addr_Opd(load_register);
+ 
+		//list<Icode_Stmt *> & ic_list = *new list<Icode_Stmt *>;
+ 
+		if (stmt.get_icode_list().empty() == false)
+			ic_list.splice(ic_list.end(), stmt.get_icode_list());
+	}
+ 
+	Ics_Opd * sp_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[sp]);
+	Ics_Opd * v0_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[v0]);
+	Ics_Opd * a0_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[a0]);
+	Ics_Opd * f12_opd = new Register_Addr_Opd(machine_desc_object.spim_register_table[f12]);
+ 
+	Const_Opd<int> * constant_stmt = new Const_Opd<int>(-4);
+	Const_Opd<int> * constant_stmt2 = new Const_Opd<int>(-8);
+	Const_Opd<int> * constant_stmt3 = new Const_Opd<int>(1);
+	Const_Opd<int> * constant_stmt4 = new Const_Opd<int>(4);
+	Const_Opd<int> * constant_stmt5 = new Const_Opd<int>(8);
+	Const_Opd<int> * constant_stmt6 = new Const_Opd<int>(3);
+	
+ 
+	Compute_IC_Stmt* add_statement= new Compute_IC_Stmt(imm_add,sp_opd,sp_opd,constant_stmt);
+	ic_list.push_back(add_statement);
+	
+	//sw $v0, 0($sp)
+	string name="name";
+	Symbol_Table_Entry &se= *new Symbol_Table_Entry(name,int_data_type,lineno);
+	se.set_symbol_scope(formal);
+	se.set_start_offset(0);
+	Mem_Addr_Opd* temp_memory_address= new Mem_Addr_Opd(se);
+	Move_IC_Stmt* return_statement = new Move_IC_Stmt(store, v0_opd, temp_memory_address);
+	ic_list.push_back(return_statement);
+ 
+	ic_list.push_back(add_statement);
+ 
+	Move_IC_Stmt* return_statement1 = new Move_IC_Stmt(store, a0_opd, temp_memory_address);
+	ic_list.push_back(return_statement1);
+ 
+	Compute_IC_Stmt* add_statement1= new Compute_IC_Stmt(imm_add,sp_opd,sp_opd,constant_stmt2);
+	ic_list.push_back(add_statement1);
+ 
+	Move_IC_Stmt* return_statement2 = new Move_IC_Stmt(store_d, f12_opd, temp_memory_address);
+	ic_list.push_back(return_statement2);
+ 
+	Move_IC_Stmt* li_v0_statement;
+ 
+	if(argument->get_data_type() == string_data_type)
+	{
+//        cout<<argument->get_label()<<endl;
+		Label_IC_Stmt* load_addr= new Label_IC_Stmt(la , a0_opd , argument->get_label() );
+		ic_list.push_back(load_addr);
+ 
+		li_v0_statement=new Move_IC_Stmt(imm_load,constant_stmt4,v0_opd);
+	}    
+	else if (argument->get_data_type() == string_data_type)
+	{
+		Move_IC_Stmt* return_statement3 = new Move_IC_Stmt(mov, operand,a0_opd);
+		ic_list.push_back(return_statement3);
+ 
+		li_v0_statement=new Move_IC_Stmt(imm_load,constant_stmt3,v0_opd);
+	}
+	 else
+	{
+		Move_IC_Stmt* return_statement3 = new Move_IC_Stmt(mov, operand,a0_opd);
+		ic_list.push_back(return_statement3);
+ 
+		li_v0_statement=new Move_IC_Stmt(imm_load,constant_stmt6,v0_opd);
+	}
+ 
+	//Move_IC_Stmt* li_v0_statement= new Move_IC_Stmt(imm_load,constant_stmt3,v0_opd);
+	ic_list.push_back(li_v0_statement);
+ 
+	string temp="";
+	Label_IC_Stmt* syscall1= new Label_IC_Stmt(syscall,NULL,temp);
+	ic_list.push_back(syscall1);
+ 
+	Move_IC_Stmt* return_statement3 = new Move_IC_Stmt(load_d, temp_memory_address, f12_opd);
+	ic_list.push_back(return_statement3);
+ 
+	Compute_IC_Stmt* add_statement2= new Compute_IC_Stmt(imm_add,sp_opd,sp_opd,constant_stmt5);
+	ic_list.push_back(add_statement2);
+ 
+	Move_IC_Stmt* return_statement4 = new Move_IC_Stmt(load, temp_memory_address,a0_opd);
+	ic_list.push_back(return_statement4);
+ 
+	Compute_IC_Stmt* add_statement3= new Compute_IC_Stmt(imm_add,sp_opd,sp_opd,constant_stmt4);
+	ic_list.push_back(add_statement3);
+ 
+	Move_IC_Stmt* return_statement5 = new Move_IC_Stmt(load, temp_memory_address,v0_opd);
+	ic_list.push_back(return_statement5);
+ 
+	ic_list.push_back(add_statement3);
+ 
+	Code_For_Ast * print_stmt;
+	if (ic_list.empty() == false)
+		print_stmt = new Code_For_Ast(ic_list, NULL);
+ 
+	return *print_stmt;    
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 ////////// CODE FOR OPTIMIZATIONS ///////////////////////////////////////////
@@ -1084,4 +1419,3 @@ list<Icode_Stmt *> CFG::toInstructionList(){
 
 	return inst;
 }
-/////////////////////////////////////////////////////////////

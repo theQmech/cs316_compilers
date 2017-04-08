@@ -504,12 +504,75 @@ Label_IC_Stmt& Label_IC_Stmt::operator=(const Label_IC_Stmt& rhs)
 
 void Label_IC_Stmt::print_icode(ostream & file_buffer)
 {
-	file_buffer << "\n" << offset << ":    \t\n";
+	if (op_desc.get_op() == Tgt_Op::la){
+		string op_name = op_desc.get_name();
+		file_buffer << "\t" << op_name << " ";
+		if (opd1)
+			opd1->print_ics_opd(file_buffer);
+		file_buffer << ", ";
+		file_buffer<<offset;
+		file_buffer << "\n";
+	}
+	else{
+		file_buffer << "\n" << offset << ":    \t\n";
+	}
 }
 
 void Label_IC_Stmt::print_assembly(ostream & file_buffer)
 {
-	file_buffer << "\n" << offset << ":    \t\n";
+	if (op_desc.get_op() == Tgt_Op::la && opd1!=NULL){
+		string op_name = op_desc.get_mnemonic();
+		file_buffer << "\t" << op_name << " ";
+		if (opd1)
+			opd1->print_asm_opd(file_buffer);
+		file_buffer << ", ";
+		file_buffer<<offset;
+		// file_buffer<<"HI";
+		file_buffer << "\n";
+	}
+	else{
+		file_buffer << "\n" << offset << ":    \t\n";
+	}
+
+}
+
+/*************************** Class String_IC_Stmt *****************************/
+
+String_IC_Stmt::String_IC_Stmt(string _label, string _mystring){
+	label = _label;
+	mystring = _mystring;
+}
+
+String_IC_Stmt::~String_IC_Stmt(){}
+
+string String_IC_Stmt::get_string(){
+	return mystring;
+}
+
+string String_IC_Stmt::get_label(){
+	return label;
+}
+
+void String_IC_Stmt::print_icode(ostream & file_buffer){
+	file_buffer<< label<<":\t"<<mystring<<"\t\n";
+}
+
+void String_IC_Stmt::print_assembly(ostream & file_buffer){
+	file_buffer<< label<<":\t"<<mystring<<"\t\n";
+}
+
+/*************************** Class Syscall_IC_Stmt *****************************/
+
+Syscall_IC_Stmt::Syscall_IC_Stmt(){}
+
+Syscall_IC_Stmt::~Syscall_IC_Stmt(){}
+
+void Syscall_IC_Stmt::print_icode(ostream & file_buffer){
+	file_buffer<<"syscall\n";
+}
+
+void Syscall_IC_Stmt::print_assembly(ostream & file_buffer){
+	file_buffer<<"\tsyscall \n";
 }
 
 /******************************* Class Code_For_Ast ****************************/
