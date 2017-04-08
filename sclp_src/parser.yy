@@ -319,6 +319,7 @@ procedure_definition:
             "More than one return type not allowed\n", get_line_number());
 
         seq->ast_push_back(ret);
+
         current_procedure->set_sequence_ast(*seq);
     }
     }
@@ -654,6 +655,15 @@ postblock:
     {
         $$ = $1;
     }
+|
+    return_stmt
+    {
+        $$ = $1;
+    }
+    print_stmt
+    {
+        $$ = $1;
+    }
 ;
 
 // Make sure to call check_ast in assignment_statement and arith_expression
@@ -740,10 +750,8 @@ arith_expression:
     func_call
     {
         if (NOT_ONLY_PARSE){
-        // cout<<"####"<<endl;
             $$ = new Arith_Func_Call($1, NULL, get_line_number());
             $$->check_ast();
-        // cout<<"####"<<endl;
         }
     }
 ;

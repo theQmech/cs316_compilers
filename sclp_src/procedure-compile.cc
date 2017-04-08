@@ -20,7 +20,9 @@ void Procedure::print_icode(ostream & file_buffer){
 void Procedure::print_assembly(ostream & file_buffer){
 	print_prologue(file_buffer);
 	// Print the procedure
+	// cout<<"#######"<<endl;
 	sequence_ast->print_assembly(file_buffer);
+	// cout<<"#######"<<endl;
 	file_buffer<<"\tj epilogue_"<<name<<endl;
 	print_epilogue(file_buffer);
 }

@@ -1,5 +1,4 @@
 int global_variable;
-
 int f1();
 int f2();
 int f3();
@@ -37,9 +36,9 @@ main(){
 	print(global_variable);
 	print("\n");
 
-	if(a == 1) return 0;
-	else if(b == 1) return 1;
-	else if(c == 1) return 2;
-	else return 3;
-	return 0;	
+	// if(a == 1) return 0;
+	// else if(b == 1) return 1;
+	// else if(c == 1) return 2;
+	// else return 3;
+	return 0;
 }
