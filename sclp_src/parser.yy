@@ -634,7 +634,7 @@ return_stmt:
         $$ = new Return_Ast(NULL, get_line_number(), current_procedure->get_proc_name());
     }
 |
-    RETURN expression_term ';'
+    RETURN arith_expression ';'
     {
         $$ = new Return_Ast($2, get_line_number(), current_procedure->get_proc_name());
     }

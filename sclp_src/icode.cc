@@ -60,19 +60,35 @@ void Mem_Addr_Opd::print_asm_opd(ostream & file_buffer)
 	// CHECK_INVARIANT(((symbol_scope == local) || (symbol_scope == global)), 
 	// 		"Wrong scope value");
 
+	Data_Type dt = symbol_entry->get_data_type();
+	int sz = 0;
+	switch(dt)
+	{
+		case int_data_type: 
+			sz=4; 
+			break;
+		case double_data_type: 
+			sz=8; 
+			break;
+		case void_data_type: 
+			CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Attempt to seek size of type void");
+		default: 
+			CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Data type not supperted");
+	}
+
 	if (symbol_scope == local)
 	{
 		int offset = symbol_entry->get_start_offset();
-		file_buffer << offset << "($fp)";
+		file_buffer << offset-sz << "($fp)";
 	}
 	else if (symbol_scope == formal && !is_argument){
 		int offset = symbol_entry->get_start_offset();
-		file_buffer << offset << "($fp)";
+		file_buffer << offset-sz << "($fp)";
 	}
 	else if (symbol_scope == formal)
 	{
 		int offset = aux_offset_from_sp;
-		file_buffer << offset  << "($sp)";
+		file_buffer << offset-sz  << "($sp)";
 	}
 	else
 		file_buffer << symbol_entry->get_variable_name();

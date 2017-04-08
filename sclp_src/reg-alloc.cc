@@ -40,9 +40,11 @@ void Register_Descriptor::set_register_occupied()		{ reg_occupied = true; }
 void Register_Descriptor::reset_register_occupied()		{ reg_occupied = false; }
 
 bool Register_Descriptor::is_used_for_expr_result()		{ return used_for_expr_result; }
-void Register_Descriptor::reset_use_for_expr_result()		{ used_for_expr_result = false; 
-								  reg_occupied = false; 
-								  used_for_fn_return = false; }
+void Register_Descriptor::reset_use_for_expr_result()		{ 
+								// cout<<"reset "<<reg_name<<endl; 
+								used_for_expr_result = false; 
+								reg_occupied = false; 
+								used_for_fn_return = false; }
 void Register_Descriptor::set_use_for_expr_result()		{ used_for_expr_result = true; }
 
 void Register_Descriptor::set_used_for_fn_return()		{ used_for_fn_return = true; }

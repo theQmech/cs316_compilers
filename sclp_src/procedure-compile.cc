@@ -30,8 +30,8 @@ void Procedure::print_prologue(ostream & file_buffer){
 	file_buffer<<name<<":\t\t\t\t# .globl makes main know to the \n";
 	file_buffer<<"\t\t\t\t# outside of the program.\n";
 	file_buffer<<"# Prologue begins \n";
-	file_buffer<<"\tsw $ra, 0($sp)\t\t# Save the return address\n";
-	file_buffer<<"\tsw $fp, -4($sp)\t\t# Save the frame pointer\n";
+	file_buffer<<"\tsw $ra, -4($sp)\t\t# Save the return address\n";
+	file_buffer<<"\tsw $fp, -8($sp)\t\t# Save the frame pointer\n";
 	file_buffer<<"\tsub $fp, $sp, 8\t\t# Update the frame pointer\n";
 	// Print the local variable in stack
 	file_buffer<<"\n";
@@ -49,8 +49,8 @@ void Procedure::print_epilogue(ostream & file_buffer){
 	// 	file_buffer<<"\tadd $sp, $sp, "<<8+local_symbol_table.get_size()<<endl;
 	// else
 	file_buffer<<"\tadd $sp, $sp, "<<8+local_symbol_table.get_size()<<endl;
-	file_buffer<<"\tlw $fp, -4($sp)  \n";
-	file_buffer<<"\tlw $ra, 0($sp)   \n";
+	file_buffer<<"\tlw $fp, -8($sp)  \n";
+	file_buffer<<"\tlw $ra, -4($sp)   \n";
 	file_buffer<<"\tjr        $31\t\t# Jump back to the called procedure\n";
 	file_buffer<<"# Epilogue Ends\n";
 }

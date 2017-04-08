@@ -83,6 +83,8 @@ Code_For_Ast & Name_Ast::compile()
 	else if (node_data_type == double_data_type)
 		reg = machine_desc_object.get_new_register<float_reg>();
 
+	// cout<<"#####"<<reg->get_name()<<endl;
+
 	Ics_Opd * opd = new Mem_Addr_Opd(*variable_symbol_entry);
 	Ics_Opd * result_opd = new Register_Addr_Opd(reg);
 
@@ -102,6 +104,7 @@ Code_For_Ast & Name_Ast::compile()
 
 Code_For_Ast & Name_Ast::create_store_stmt(Register_Descriptor * store_register)
 {
+	// variable_symbol_entry->update_register(store_register);
 	Ics_Opd * result_opd = new Mem_Addr_Opd(*variable_symbol_entry);
 	Ics_Opd * opd = new Register_Addr_Opd(store_register);
 
@@ -110,6 +113,8 @@ Code_For_Ast & Name_Ast::create_store_stmt(Register_Descriptor * store_register)
 		ic_stmt = new Move_IC_Stmt(Tgt_Op::store, opd, result_opd);
 	else if (node_data_type == double_data_type)
 		ic_stmt = new Move_IC_Stmt(Tgt_Op::store_d, opd, result_opd);
+
+	store_register->reset_use_for_expr_result();
 
 	list<Icode_Stmt *> & ic_list = *new list<Icode_Stmt *>();
 	ic_list.push_back(ic_stmt);
@@ -160,24 +165,27 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 {
 	CHECK_INVARIANT((lhs_condition != NULL), "Lhs cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((rhs_condition != NULL), "Rhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs_condition->compile();
 	Register_Descriptor * lhs_reg = lhs_stmt.get_reg();
-	Ics_Opd * lhs_opd = new Register_Addr_Opd(lhs_reg);
 	lhs_reg->set_use_for_expr_result();
+	Ics_Opd * lhs_opd = new Register_Addr_Opd(lhs_reg);
 
 	Code_For_Ast & rhs_stmt = rhs_condition->compile();
+	lhs_reg->reset_use_for_expr_result();
 	Register_Descriptor * rhs_reg = rhs_stmt.get_reg();
+	// rhs_reg->set_use_for_expr_result();
 	Ics_Opd * rhs_opd = new Register_Addr_Opd(rhs_reg);
-	rhs_reg->set_use_for_expr_result();
+
+	// rhs_reg->reset_use_for_expr_result();
+
+	CHECK_INVARIANT(lhs_reg->get_register()!=rhs_reg->get_register(),
+		"Relational_Expr_Ast::compile LHS, RHS registers are same");
 
 	Register_Descriptor * reg;
 	reg = machine_desc_object.get_new_register<gp_data>();
 	Ics_Opd * result_opd = new Register_Addr_Opd(reg);
-
-	lhs_reg->reset_use_for_expr_result();
-	rhs_reg->reset_use_for_expr_result();
 
 	list<Icode_Stmt *> & ic_list = *new list<Icode_Stmt *>();
 
@@ -223,7 +231,6 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 		if (new_ic)
 			ic_list.push_back(new_ic);
 	}
-
 	if (compute_data_type == double_data_type){
 		Ics_Opd * const_one_opd = new Const_Opd<int>(1);
 		Ics_Opd * const_zero_opd = new Const_Opd<int>(0);
@@ -258,21 +265,14 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 		if (new_ic){
 			ic_list.push_back(new_ic);
 		}
-		
-		// ic_list.splice(ic_list.end(), cond_stmt.get_icode_list());
+
 		if (rel_op == not_equalto)
 			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1t, NULL, NULL, label_last));
 		else
 			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1f, NULL, NULL, label_last));
 
 		ic_list.push_back(new Move_IC_Stmt(Tgt_Op::imm_load, const_one_opd, result_opd));
-		// ic_list.splice(ic_list.end(), then_stmt.get_icode_list());
 		ic_list.push_back(new Label_IC_Stmt(Tgt_Op::label, NULL, label_last));
-
-		// ic_list.push_back(new Compute_IC_Stmt(Tgt_Op::));
-		// ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::j, NULL, NULL, label_last));
-		// if (else_part)
-		// 	ic_list.splice(ic_list.end(), else_stmt.get_icode_list());
 	}
 
 	Code_For_Ast * rel_stmt;
@@ -333,7 +333,7 @@ Code_For_Ast & Boolean_Expr_Ast::compile()
 
 		CHECK_INVARIANT((lhs_op != NULL), "Lhs cannot be null in Assignment_Ast");
 		CHECK_INVARIANT((rhs_op != NULL), "Rhs cannot be null in Assignment_Ast");
-		machine_desc_object.clear_local_register_mappings();
+		// machine_desc_object.clear_local_register_mappings();
 
 		Code_For_Ast & lhs_stmt = *new Code_For_Ast();
 		Register_Descriptor * lhs_reg;
@@ -391,7 +391,7 @@ Code_For_Ast & Selection_Statement_Ast::compile()
 {
 	CHECK_INVARIANT((cond != NULL),"Condition cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((then_part != NULL), "then_part cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & cond_stmt = cond->compile();
 	Register_Descriptor * cond_reg = cond_stmt.get_reg();
@@ -481,11 +481,12 @@ Code_For_Ast & Plus_Ast::compile()
 {
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((rhs != NULL), "Rhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs->compile();
 	Register_Descriptor * lhs_reg = lhs_stmt.get_reg();
 	Ics_Opd * lhs_opd = new Register_Addr_Opd(lhs_reg);
+	// cout<<"#####"<<lhs_reg->get_name()<<endl;
 	lhs_reg->set_use_for_expr_result();
 
 	Code_For_Ast & rhs_stmt = rhs->compile();
@@ -533,7 +534,7 @@ Code_For_Ast & Minus_Ast::compile()
 {
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((rhs != NULL), "Rhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs->compile();
 	Register_Descriptor * lhs_reg = lhs_stmt.get_reg();
@@ -585,7 +586,7 @@ Code_For_Ast & Mult_Ast::compile()
 {
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((rhs != NULL), "Rhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs->compile();
 	Register_Descriptor * lhs_reg = lhs_stmt.get_reg();
@@ -638,7 +639,7 @@ Code_For_Ast & Conditional_Operator_Ast::compile()
 	CHECK_INVARIANT((cond != NULL),"Condition cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((rhs != NULL), "Rhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & cond_stmt = cond->compile();
 	Register_Descriptor * cond_reg = cond_stmt.get_reg();
@@ -708,7 +709,7 @@ Code_For_Ast & Divide_Ast::compile()
 {
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
 	CHECK_INVARIANT((rhs != NULL), "Rhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs->compile();
 	Register_Descriptor * lhs_reg = lhs_stmt.get_reg();
@@ -760,7 +761,7 @@ Code_For_Ast & Divide_Ast::compile()
 Code_For_Ast & UMinus_Ast::compile()
 {
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs->compile();
 	Register_Descriptor * lhs_reg = lhs_stmt.get_reg();
@@ -802,7 +803,7 @@ Code_For_Ast & UMinus_Ast::compile()
 Code_For_Ast & Arith_Func_Call::compile()
 {
 	CHECK_INVARIANT((lhs != NULL), "Lhs cannot be null in Assignment_Ast");
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 
 	Code_For_Ast & lhs_stmt = lhs->compile();
 	Register_Descriptor *v1_reg;
@@ -853,7 +854,7 @@ Code_For_Ast & Sequence_Ast::compile()
 	// bool flag = (optimize_flag==0);
 	// ++optimize_flag;
 
-	machine_desc_object.clear_local_register_mappings();
+	// machine_desc_object.clear_local_register_mappings();
 	for(list<Ast *>::iterator it=statement_list.begin();
 			it!=statement_list.end(); ++it){
 		Code_For_Ast curr = (*it)->compile();
@@ -1071,7 +1072,15 @@ Code_For_Ast & Print_Ast::compile(){
 	Symbol_Table_Entry & se= *new Symbol_Table_Entry(temp11,int_data_type,lineno);
 	se.set_symbol_scope(formal);
 	se.set_start_offset(0);
-	Mem_Addr_Opd* temp_mem_addr= new Mem_Addr_Opd(se, 0);
+	Mem_Addr_Opd* temp_mem_addr= new Mem_Addr_Opd(se, 4);
+
+	string temp22 = "tempvar";
+	Symbol_Table_Entry & se2= *new Symbol_Table_Entry(temp22,double_data_type,lineno);
+	se2.set_symbol_scope(formal);
+	se2.set_start_offset(0);
+	Mem_Addr_Opd* temp_mem_addr2= new Mem_Addr_Opd(se2, 8);
+
+
 	// sw v0 to stack
 	Move_IC_Stmt* store_stmt = new Move_IC_Stmt(Tgt_Op::store, v0_opd, temp_mem_addr);
 	ic_list->push_back(store_stmt);
@@ -1086,7 +1095,7 @@ Code_For_Ast & Print_Ast::compile(){
 	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd,constant1,sp_opd);
 	ic_list->push_back(adjust_stack);
 
-	Move_IC_Stmt* store_stmt2 = new Move_IC_Stmt(Tgt_Op::store_d, f12_opd, temp_mem_addr);
+	Move_IC_Stmt* store_stmt2 = new Move_IC_Stmt(Tgt_Op::store_d, f12_opd, temp_mem_addr2);
 	ic_list->push_back(store_stmt2);
 
 
@@ -1121,24 +1130,24 @@ Code_For_Ast & Print_Ast::compile(){
 	ic_list->push_back(syscall0);
 
 	// Reset
-	Move_IC_Stmt* load_stmt = new Move_IC_Stmt(Tgt_Op::load_d, temp_mem_addr, f12_opd);
+	Move_IC_Stmt* load_stmt = new Move_IC_Stmt(Tgt_Op::load_d, temp_mem_addr2, f12_opd);
 	ic_list->push_back(load_stmt);
 	Const_Opd<int> * constant5 = new Const_Opd<int>(8);
 	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd,constant5, sp_opd);
 	ic_list->push_back(adjust_stack);
 
- 	load_stmt = new Move_IC_Stmt(Tgt_Op::load, temp_mem_addr,a0_opd);
+	load_stmt = new Move_IC_Stmt(Tgt_Op::load, temp_mem_addr, a0_opd);
 	ic_list->push_back(load_stmt);
 	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd, constant3, sp_opd);
 	ic_list->push_back(adjust_stack);
- 
- 	load_stmt = new Move_IC_Stmt(Tgt_Op::load, temp_mem_addr,v0_opd);
+
+	load_stmt = new Move_IC_Stmt(Tgt_Op::load, temp_mem_addr, v0_opd);
 	ic_list->push_back(load_stmt);
 	adjust_stack = new Compute_IC_Stmt(Tgt_Op::imm_add,sp_opd, constant3, sp_opd);
 	ic_list->push_back(adjust_stack);
- 
+
 	Code_For_Ast * ret_val = new Code_For_Ast(*ic_list, NULL);
-	return *ret_val;	    
+	return *ret_val;
 }
 
 void Print_Ast::print_assembly(ostream & file_buffer){
