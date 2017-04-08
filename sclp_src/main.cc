@@ -48,13 +48,12 @@ int main(int argc, char * argv[])
 			program_object.compile();
 			if (command_options.is_show_symtab_selected())
 				program_object.print_sym();
+			program_object.print_assembly();
 		#else
 			CHECK_INPUT_AND_ABORT(CONTROL_SHOULD_NOT_REACH, 
 			"SCLP is currently in interpretation mode. Select another option or compile SCLP in compilation mode", -1);
 		#endif
 		}
-
-		program_object.print_assembly();
 
 		program_object.delete_all();
 	}

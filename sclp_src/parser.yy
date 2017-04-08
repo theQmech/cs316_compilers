@@ -92,6 +92,32 @@ program:
 ;
 
 declaration_list:
+    {
+    if (NOT_ONLY_PARSE)
+    {
+        Symbol_Table * global_table = new Symbol_Table();
+        program_object.set_global_table(*global_table);
+    }
+    }
+|
+    variable_declaration_list
+    {
+    if (NOT_ONLY_PARSE)
+    {
+        Symbol_Table * global_table = $1;
+
+        CHECK_INVARIANT((global_table != NULL), "Global declarations cannot be null");
+
+        list<Symbol_Table_Entry *> list_global_vars = $1->get_table();
+        for (list<Symbol_Table_Entry *>::iterator it = list_global_vars.begin(); 
+            it!=list_global_vars.end(); ++it){
+            (*it)->set_symbol_scope(global);
+        }
+
+        program_object.set_global_table(*global_table);
+    }
+    }
+|
     procedure_declaration_list
     {
     if (NOT_ONLY_PARSE)
@@ -660,6 +686,7 @@ postblock:
     {
         $$ = $1;
     }
+|
     print_stmt
     {
         $$ = $1;
