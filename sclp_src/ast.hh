@@ -365,9 +365,10 @@ public:
 
 class Return_Ast: public Ast{
 	Ast * return_variable;
+	string my_proc_name;
 
 public:
-	Return_Ast(Ast * temp_return, int line);
+	Return_Ast(Ast * temp_return, int line, string _my_proc_name);
 	void set_return_ast(Ast * temp_return);
 	Ast * get_return_ast();
 	~Return_Ast();

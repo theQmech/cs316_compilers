@@ -664,7 +664,7 @@ void Sequence_Ast::print(ostream & file_buffer){
 
 /////////////////////////////////////////////////////////////////////
 
-Return_Ast::Return_Ast(Ast * temp_return, int line){
+Return_Ast::Return_Ast(Ast * temp_return, int line, string _my_proc_name){
 	lineno = line;
 	return_variable = temp_return;
 	if (return_variable == NULL){
@@ -675,6 +675,7 @@ Return_Ast::Return_Ast(Ast * temp_return, int line){
 		ast_num_child = unary_arity;
 		node_data_type = return_variable->get_data_type();
 	}
+	my_proc_name = _my_proc_name;
 }
 
 Data_Type Return_Ast::get_data_type(){

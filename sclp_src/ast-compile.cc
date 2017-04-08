@@ -188,13 +188,15 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 		ic_list.splice(ic_list.end(), rhs_stmt.get_icode_list());
 
 	Data_Type compute_data_type = int_data_type;
-	if (!lhs_condition)
+	if (lhs_condition != NULL){
 		compute_data_type = lhs_condition->get_data_type();
-	if (!rhs_condition)
+	}
+	if (rhs_condition != NULL){
 		compute_data_type = rhs_condition->get_data_type();
+	}
 
 	Icode_Stmt * new_ic;
-	if (compute_data_type == int_data_type)
+	if (compute_data_type == int_data_type){
 		switch(rel_op){
 			case less_equalto:
 				new_ic = new Compute_IC_Stmt(Tgt_Op::sle, lhs_opd, rhs_opd, result_opd);
@@ -218,10 +220,15 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 				new_ic = NULL;
 				break;
 		}
-	if (new_ic)
-		ic_list.push_back(new_ic);
+		if (new_ic)
+			ic_list.push_back(new_ic);
+	}
 
 	if (compute_data_type == double_data_type){
+		Ics_Opd * const_one_opd = new Const_Opd<int>(1);
+		Ics_Opd * const_zero_opd = new Const_Opd<int>(0);
+		ic_list.push_back(new Move_IC_Stmt(Tgt_Op::imm_load, const_zero_opd, result_opd));
+
 		switch(rel_op){
 			case less_equalto:
 				new_ic = new Compute_IC_Stmt(Tgt_Op::sle_d, lhs_opd, rhs_opd, result_opd);
@@ -245,27 +252,21 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 				new_ic = NULL;
 				break;
 		}
-		Ics_Opd * const_one_opd = new Const_Opd<int>(1);
-		Ics_Opd * const_zero_opd = new Const_Opd<int>(0);
 
-		string label_true = get_new_label();
 		string label_last = get_new_label();
 
-		if (new_ic)
+		if (new_ic){
 			ic_list.push_back(new_ic);
+		}
+		
 		// ic_list.splice(ic_list.end(), cond_stmt.get_icode_list());
 		if (rel_op == not_equalto)
-			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1f, NULL, NULL, label_true));
+			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1t, NULL, NULL, label_last));
 		else
-			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1t, NULL, NULL, label_true));
-		// ic_list.splice(ic_list.end(), then_stmt.get_icode_list());
+			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1f, NULL, NULL, label_last));
 
-		ic_list.push_back(new Move_IC_Stmt(Tgt_Op::imm_load, const_zero_opd, result_opd));
-		ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::j, NULL, NULL, label_last));
-
-		ic_list.push_back(new Label_IC_Stmt(Tgt_Op::label, NULL, label_true));
 		ic_list.push_back(new Move_IC_Stmt(Tgt_Op::imm_load, const_one_opd, result_opd));
-
+		// ic_list.splice(ic_list.end(), then_stmt.get_icode_list());
 		ic_list.push_back(new Label_IC_Stmt(Tgt_Op::label, NULL, label_last));
 
 		// ic_list.push_back(new Compute_IC_Stmt(Tgt_Op::));
@@ -279,6 +280,7 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 		rel_stmt = new Code_For_Ast(ic_list, reg);
 
 	return *rel_stmt;
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -921,7 +923,7 @@ Code_For_Ast & Return_Ast::compile(){
 		icode_list.push_back(ic_stmt);
 	}
 
-	Icode_Stmt * new_ic = new Control_Flow_IC_Stmt(ret_inst, NULL, NULL, "");
+	Icode_Stmt * new_ic = new Control_Flow_IC_Stmt(j, NULL, NULL, "epilogue_"+my_proc_name);
 	icode_list.push_back(new_ic);
 
 	Code_For_Ast * ret_val = new Code_For_Ast(icode_list, NULL);

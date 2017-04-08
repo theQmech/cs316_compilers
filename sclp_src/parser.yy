@@ -631,12 +631,12 @@ arguments ',' arith_expression
 return_stmt:
     RETURN ';'
     {
-        $$ = new Return_Ast(NULL, get_line_number());
+        $$ = new Return_Ast(NULL, get_line_number(), current_procedure->get_proc_name());
     }
 |
     RETURN expression_term ';'
     {
-        $$ = new Return_Ast($2, get_line_number());
+        $$ = new Return_Ast($2, get_line_number(), current_procedure->get_proc_name());
     }
 ;
 

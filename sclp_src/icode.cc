@@ -241,6 +241,7 @@ void Move_IC_Stmt::print_assembly(ostream & file_buffer)
 	CHECK_INVARIANT (result, "Result cannot be NULL for a move IC Stmt");
 	string op_name = op_desc.get_mnemonic();
 
+	// cout<<"######"<<endl;
 	Assembly_Format assem_format = op_desc.get_assembly_format();
 	switch (assem_format)
 	{
@@ -262,7 +263,8 @@ void Move_IC_Stmt::print_assembly(ostream & file_buffer)
 
 			break; 
 
-		default: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Intermediate code format not supported");
+		default: 
+			CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Intermediate code format not supported");
 			break;
 	}
 }
@@ -464,6 +466,7 @@ void Control_Flow_IC_Stmt::print_assembly(ostream & file_buffer)
 	// CHECK_INVARIANT (opd1, "Opd1 cannot be NULL for a move IC Stmt");
 	// CHECK_INVARIANT (opd2, "Opd2 cannot be NULL for a move IC Stmt");
 	// CHECK_INVARIANT (offset, "offset cannot be NULL for a Control_Flow_IC_Stmt");
+	// cout<<"here"<<endl;
 	string op_name = op_desc.get_mnemonic();
 
 	Assembly_Format assem_format = op_desc.get_assembly_format();
@@ -482,7 +485,7 @@ void Control_Flow_IC_Stmt::print_assembly(ostream & file_buffer)
 			break; 
 
 		case a_op:
-			// file_buffer << "\t" << op_name << " \n";
+			file_buffer << "\t" << op_name << " \n";
 			break;
 
 		default: 
