@@ -244,7 +244,7 @@ void Move_IC_Stmt::print_assembly(ostream & file_buffer)
 	Assembly_Format assem_format = op_desc.get_assembly_format();
 	switch (assem_format)
 	{
-	case a_op_r_o1: 
+		case a_op_r_o1: 
 			file_buffer << "\t" << op_name << " ";
 			result->print_asm_opd(file_buffer);
 			file_buffer << ", ";
@@ -253,7 +253,7 @@ void Move_IC_Stmt::print_assembly(ostream & file_buffer)
 
 			break; 
 
-	case a_op_o1_r: 
+		case a_op_o1_r: 
 			file_buffer << "\t" << op_name << " ";
 			opd1->print_asm_opd(file_buffer);
 			file_buffer << ", ";
@@ -262,8 +262,8 @@ void Move_IC_Stmt::print_assembly(ostream & file_buffer)
 
 			break; 
 
-	default: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Intermediate code format not supported");
-		break;
+		default: CHECK_INVARIANT(CONTROL_SHOULD_NOT_REACH, "Intermediate code format not supported");
+			break;
 	}
 }
 
@@ -361,6 +361,16 @@ void Compute_IC_Stmt::print_assembly(ostream & file_buffer)
 	Assembly_Format assem_format = op_desc.get_assembly_format();
 	switch (assem_format)
 	{
+	case a_op_o1_o2:
+		file_buffer << "\t" << op_name << " ";
+		if (opd1)
+			opd1->print_asm_opd(file_buffer);
+		file_buffer << ", ";
+		if (opd2)
+			opd2->print_asm_opd(file_buffer);
+		file_buffer << "\n";
+		break; 
+
 	case a_op_r_o1_o2: 
 		file_buffer << "\t" << op_name << " ";
 		result->print_asm_opd(file_buffer);

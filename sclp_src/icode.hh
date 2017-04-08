@@ -261,7 +261,7 @@ class Compute_IC_Stmt: public Icode_Stmt
 	Ics_Opd * result;
 
 public:
-	Compute_IC_Stmt(Tgt_Op inst_op, Ics_Opd * opd1, Ics_Opd * opd2, Ics_Opd * result); 
+	Compute_IC_Stmt(Tgt_Op op, Ics_Opd * o1, Ics_Opd * o2, Ics_Opd * res);
 	~Compute_IC_Stmt() {} 
 	Compute_IC_Stmt & operator=(const Compute_IC_Stmt & rhs);
 

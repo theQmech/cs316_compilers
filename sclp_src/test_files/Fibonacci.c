@@ -10,7 +10,7 @@ main()
     number=1;
     size = 20;
     i = 1;
-    fibonacci (prev_number,number);
+    fibonacci(prev_number,number);
     return ;
 }
 

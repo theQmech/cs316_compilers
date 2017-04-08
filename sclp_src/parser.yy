@@ -588,6 +588,7 @@ print_argument:
         $$ = new String_Ast(*$1, get_line_number());
     }
 ;
+
 func_call:
     NAME '(' arguments ')'
 {

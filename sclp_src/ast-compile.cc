@@ -187,32 +187,92 @@ Code_For_Ast & Relational_Expr_Ast::compile()
 	if (rhs_stmt.get_icode_list().empty() == false)
 		ic_list.splice(ic_list.end(), rhs_stmt.get_icode_list());
 
+	Data_Type compute_data_type = int_data_type;
+	if (!lhs_condition)
+		compute_data_type = lhs_condition->get_data_type();
+	if (!rhs_condition)
+		compute_data_type = rhs_condition->get_data_type();
+
 	Icode_Stmt * new_ic;
-	switch(rel_op){
-		case less_equalto:
-			new_ic = new Compute_IC_Stmt(Tgt_Op::sle, lhs_opd, rhs_opd, result_opd);
-			break;
-		case less_than:
-			new_ic = new Compute_IC_Stmt(Tgt_Op::slt, lhs_opd, rhs_opd, result_opd);
-			break;
-		case greater_than:
-			new_ic = new Compute_IC_Stmt(Tgt_Op::sgt, lhs_opd, rhs_opd, result_opd);
-			break;
-		case greater_equalto:
-			new_ic = new Compute_IC_Stmt(Tgt_Op::sge, lhs_opd, rhs_opd, result_opd);
-			break;
-		case equalto:
-			new_ic = new Compute_IC_Stmt(Tgt_Op::seq, lhs_opd, rhs_opd, result_opd);
-			break;
-		case not_equalto:
-			new_ic = new Compute_IC_Stmt(Tgt_Op::sne, lhs_opd, rhs_opd, result_opd);
-			break;
-		default:
-			new_ic = NULL;
-			break;
-	}
+	if (compute_data_type == int_data_type)
+		switch(rel_op){
+			case less_equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::sle, lhs_opd, rhs_opd, result_opd);
+				break;
+			case less_than:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::slt, lhs_opd, rhs_opd, result_opd);
+				break;
+			case greater_than:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::sgt, lhs_opd, rhs_opd, result_opd);
+				break;
+			case greater_equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::sge, lhs_opd, rhs_opd, result_opd);
+				break;
+			case equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::seq, lhs_opd, rhs_opd, result_opd);
+				break;
+			case not_equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::sne, lhs_opd, rhs_opd, result_opd);
+				break;
+			default:
+				new_ic = NULL;
+				break;
+		}
 	if (new_ic)
 		ic_list.push_back(new_ic);
+
+	if (compute_data_type == double_data_type){
+		switch(rel_op){
+			case less_equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::sle_d, lhs_opd, rhs_opd, result_opd);
+				break;
+			case less_than:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::slt_d, lhs_opd, rhs_opd, result_opd);
+				break;
+			case greater_than:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::slt_d, rhs_opd, lhs_opd, result_opd);
+				break;
+			case greater_equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::sle_d, rhs_opd, lhs_opd, result_opd);
+				break;
+			case equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::seq_d, lhs_opd, rhs_opd, result_opd);
+				break;
+			case not_equalto:
+				new_ic = new Compute_IC_Stmt(Tgt_Op::seq_d, lhs_opd, rhs_opd, result_opd);
+				break;
+			default:
+				new_ic = NULL;
+				break;
+		}
+		Ics_Opd * const_one_opd = new Const_Opd<int>(1);
+		Ics_Opd * const_zero_opd = new Const_Opd<int>(0);
+
+		string label_true = get_new_label();
+		string label_last = get_new_label();
+
+		if (new_ic)
+			ic_list.push_back(new_ic);
+		// ic_list.splice(ic_list.end(), cond_stmt.get_icode_list());
+		if (rel_op == not_equalto)
+			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1f, NULL, NULL, label_true));
+		else
+			ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::bc1t, NULL, NULL, label_true));
+		// ic_list.splice(ic_list.end(), then_stmt.get_icode_list());
+
+		ic_list.push_back(new Move_IC_Stmt(Tgt_Op::imm_load, const_zero_opd, result_opd));
+		ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::j, NULL, NULL, label_last));
+
+		ic_list.push_back(new Label_IC_Stmt(Tgt_Op::label, NULL, label_true));
+		ic_list.push_back(new Move_IC_Stmt(Tgt_Op::imm_load, const_one_opd, result_opd));
+
+		ic_list.push_back(new Label_IC_Stmt(Tgt_Op::label, NULL, label_last));
+
+		// ic_list.push_back(new Compute_IC_Stmt(Tgt_Op::));
+		// ic_list.push_back(new Control_Flow_IC_Stmt(Tgt_Op::j, NULL, NULL, label_last));
+		// if (else_part)
+		// 	ic_list.splice(ic_list.end(), else_stmt.get_icode_list());
+	}
 
 	Code_For_Ast * rel_stmt;
 	if (ic_list.empty() == false)
