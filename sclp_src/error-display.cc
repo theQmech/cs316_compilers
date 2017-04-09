@@ -6,7 +6,7 @@
 using namespace std;
 
 #include "common-classes.hh"
-
+#include "symbol-table.hh"
 #include "user-options.hh"
 #include "error-display.hh"
 
@@ -46,4 +46,27 @@ void report_violation_and_abort(bool condition, string error_message, int lineno
 bool error_status()
 {
 	return global_error_status;
+}
+
+string TYPE_TO_STRING(Data_Type dt){
+	switch (dt){
+		case void_data_type:
+			return "VOID";
+			break;
+		case int_data_type:
+			return "INT";
+			break;
+		case double_data_type:
+			return "FLOAT";
+			break;
+		case string_data_type:
+			return "STRING";
+			break;
+		case func_data_type:
+			return "FUNC";
+			break;
+		default:
+			return "NONE";
+			break;
+	}
 }

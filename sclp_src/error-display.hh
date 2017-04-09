@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <string>
+#include "symbol-table.hh"
 
 #define NO_FILE_LINE -1
 
@@ -14,6 +15,8 @@ bool error_status();
 void report_violation_of_condition(bool condition, string s, int lineno);
 void report_violation_and_abort(bool condition, string s, int lineno);
 void check_invariant_underlying_function(bool condition, string error_message);
+
+string TYPE_TO_STRING(Data_Type dt);
 
 #define CHECK_INVARIANT(x,y) \
      {  stringstream ___new___string___; \

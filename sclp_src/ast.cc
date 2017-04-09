@@ -85,8 +85,12 @@ bool Assignment_Ast::check_ast()
 	//ADD CODE HERE
 	Data_Type l = lhs->get_data_type();
 	Data_Type r = rhs->get_data_type();
+	// if (r == func_data_type)
+	// 	r = ((Func_Call_Ast*)rhs)->get_proc()->get_return_type();
 
-	CHECK_INPUT((l==r), "Assignment statement data type not compatible", lineno);
+	string msg = "Assignment statement data type not compatible. ";
+	msg += TYPE_TO_STRING(l)+" <- "+TYPE_TO_STRING(r);
+	CHECK_INPUT((l==r), msg, lineno);
 
 	node_data_type = l;
 	return true;
@@ -237,6 +241,8 @@ bool Arithmetic_Expr_Ast::check_ast()
 		CHECK_INVARIANT((lhs != NULL), "Lhs of Arithmetic_Expr_Ast cannot be null");
 		CHECK_INVARIANT((rhs != NULL), "Rhs of Arithmetic_Expr_Ast cannot be null");
 		node_data_type = lhs->get_data_type();
+		if (lhs->get_data_type()!=rhs->get_data_type())
+			node_data_type = int_data_type;
 		return true;
 	}
 
@@ -410,6 +416,8 @@ Arith_Func_Call::Arith_Func_Call(Ast * l, Ast * r, int line)
 	rhs = r;
 	ast_num_child = unary_arity;
 	node_data_type = l->get_data_type();
+	// node_data_type = ((Func_Call_Ast *)l)->get_proc()->get_return_type();
+	CHECK_INVARIANT(node_data_type != void_data_type, "void function cal in arithmetic expression");
 	lineno = line;
 }
 
@@ -455,7 +463,7 @@ bool Relational_Expr_Ast::check_ast()
 {
 	// use get_data_type(), typeid()
 	//ADD CODE HERE
-
+	node_data_type = int_data_type;
 	if (ast_num_child==binary_arity){
 		CHECK_INPUT((lhs_condition->get_data_type()==rhs_condition->get_data_type()), "Relational statement data type not compatible", lineno);
 		CHECK_INVARIANT((lhs_condition != NULL), "Lhs of Relational_Expr_Ast cannot be null");
@@ -515,7 +523,7 @@ bool Boolean_Expr_Ast::check_ast()
 {
 	// use get_data_type(), typeid()
 	//ADD CODE HERE
-
+	node_data_type = int_data_type;
 	if (ast_num_child==unary_arity){
 		CHECK_INVARIANT((rhs_op != NULL), "Rhs of Boolean_Expr_Ast cannot be null");
 		return true;
@@ -707,6 +715,11 @@ Func_Call_Ast::Func_Call_Ast(Procedure * _proc, list<Ast*> * _args, int line){
 	args = _args;
 	lineno = line;
 	node_data_type = proc->get_return_type();
+	// node_data_type = func_data_type;
+}
+
+Procedure * Func_Call_Ast::get_proc(){
+	return proc;
 }
 
 Data_Type Func_Call_Ast::get_data_type(){
